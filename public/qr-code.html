@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jeffy QR Code</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        h1 { color: #000; margin-bottom: 20px; }
+        .url { 
+            background: #f3f4f6; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-family: monospace; 
+            font-size: 18px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        .instructions {
+            text-align: left;
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 { margin-top: 0; color: #92400e; }
+        .instructions ol { margin: 10px 0; }
+        .instructions li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Jeffy PWA</h1>
+        <p><strong>Scan this QR code with your iPhone camera to open Jeffy:</strong></p>
+        
+        <!-- QR Code will be generated here -->
+        <div id="qrcode" style="margin: 20px 0;"></div>
+        
+        <div class="url">
+            <strong>Or type this URL in Safari:</strong><br>
+            http://192.168.1.3:3000
+        </div>
+        
+        <div class="instructions">
+            <h3>📱 How to Install on iPhone:</h3>
+            <ol>
+                <li><strong>Open Safari</strong> (not Chrome)</li>
+                <li><strong>Scan QR code</strong> or type the URL above</li>
+                <li><strong>Tap Share button</strong> (square with arrow up)</li>
+                <li><strong>Scroll down</strong> and tap "Add to Home Screen"</li>
+                <li><strong>Tap "Add"</strong> to install</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔧 Troubleshooting:</h3>
+            <ul>
+                <li>Make sure iPhone and Mac are on same WiFi</li>
+                <li>Try refreshing the page</li>
+                <li>Check that development server is running</li>
+                <li>Use Safari, not other browsers</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        // Generate QR code
+        QRCode.toCanvas(document.getElementById('qrcode'), 'http://192.168.1.3:3000', {
+            width: 200,
+            height: 200,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function (error) {
+            if (error) console.error(error);
+            console.log('QR code generated successfully!');
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jeffy - Connection Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            margin: 0;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        h1 { color: #000; margin-bottom: 20px; }
+        .status { 
+            background: #10b981; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .url { 
+            background: #f3f4f6; 
+            padding: 15px; 
+            border-radius: 10px; 
+            font-family: monospace; 
+            font-size: 18px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+        .button {
+            background: #fbbf24;
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: #f59e0b;
+        }
+        .instructions {
+            text-align: left;
+            background: #fef3c7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .instructions h3 { margin-top: 0; color: #92400e; }
+        .instructions ol { margin: 10px 0; }
+        .instructions li { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Jeffy Connection Test</h1>
+        
+        <div class="status">
+            ✅ CONNECTED! Your iPhone can reach the server
+        </div>
+        
+        <p><strong>You're successfully connected to Jeffy!</strong></p>
+        
+        <div class="url">
+            <strong>Main Website:</strong><br>
+            <a href="http://192.168.1.3:3000" style="color: #000; text-decoration: underline;">http://192.168.1.3:3000</a>
+        </div>
+        
+        <a href="http://192.168.1.3:3000" class="button">
+            🏠 Go to Jeffy Homepage
+        </a>
+        
+        <div class="instructions">
+            <h3>📱 How to Install Jeffy App on iPhone:</h3>
+            <ol>
+                <li><strong>Tap "Go to Jeffy Homepage"</strong> button above</li>
+                <li><strong>Tap Safari's Share button</strong> (square with arrow up at bottom)</li>
+                <li><strong>Scroll down</strong> and tap "Add to Home Screen"</li>
+                <li><strong>Tap "Add"</strong> to install the app</li>
+                <li><strong>Done!</strong> Jeffy app appears on your home screen</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔧 If you can't access the main site:</h3>
+            <ul>
+                <li>Make sure iPhone and Mac are on same WiFi</li>
+                <li>Try refreshing this page</li>
+                <li>Check that development server is running</li>
+                <li>Use Safari, not Chrome or other browsers</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 14px; color: #666;">
+            <strong>Current Time:</strong> <span id="time"></span><br>
+            <strong>Connection Status:</strong> ✅ Active
+        </div>
+    </div>
+
+    <script>
+        // Update time
+        function updateTime() {
+            document.getElementById('time').textContent = new Date().toLocaleString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Test connection
+        console.log('Jeffy connection test page loaded successfully!');
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Image Test</title>
+</head>
+<body>
+    <h1>Direct Image Test</h1>
+    <p>Testing archery-bow.jpg directly:</p>
+    <img src="/products/archery-bow.jpg" alt="Archery Bow" style="width: 300px; height: 300px; border: 5px solid red;">
+    
+    <h2>Testing with different approaches:</h2>
+    
+    <h3>Approach 1: Basic img tag</h3>
+    <img src="/products/archery-bow.jpg" alt="Archery Bow" width="300" height="300">
+    
+    <h3>Approach 2: With background</h3>
+    <div style="width: 300px; height: 300px; background-image: url('/products/archery-bow.jpg'); background-size: cover; border: 5px solid blue;"></div>
+    
+    <h3>Approach 3: Object fit contain</h3>
+    <img src="/products/archery-bow.jpg" alt="Archery Bow" style="width: 300px; height: 300px; object-fit: contain; border: 5px solid green;">
+    
+    <script>
+        // Test if images load
+        document.querySelectorAll('img').forEach((img, index) => {
+            img.onload = () => console.log(`Image ${index + 1} loaded successfully`);
+            img.onerror = () => console.error(`Image ${index + 1} failed to load`);
+        });
+    </script>
+</body>
+</html>
+
+
+
+

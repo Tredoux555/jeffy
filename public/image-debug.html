@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Debug Test</title>
+    <style>
+        .test-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border: 2px solid #ccc;
+            margin: 10px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        .status {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Debug Test</h1>
+    <div class="container">
+        <div>
+            <img src="/products/archery-bow.jpg" alt="Archery Bow" class="test-image" id="img1">
+            <div class="status" id="status1">Loading...</div>
+        </div>
+        <div>
+            <img src="/products/premium-illuminated-archery-nocks--6-pack--1.jpg" alt="Archery Nocks" class="test-image" id="img2">
+            <div class="status" id="status2">Loading...</div>
+        </div>
+        <div>
+            <img src="/products/dibear-gym-gloves.jpg" alt="Gym Gloves" class="test-image" id="img3">
+            <div class="status" id="status3">Loading...</div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelectorAll('img').forEach((img, index) => {
+            img.onload = () => {
+                document.getElementById(`status${index + 1}`).textContent = '✅ Loaded successfully';
+                document.getElementById(`status${index + 1}`).style.color = 'green';
+            };
+            img.onerror = () => {
+                document.getElementById(`status${index + 1}`).textContent = '❌ Failed to load';
+                document.getElementById(`status${index + 1}`).style.color = 'red';
+            };
+        });
+    </script>
+</body>
+</html>
+
+
+
+

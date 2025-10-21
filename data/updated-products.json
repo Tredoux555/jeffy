@@ -1,0 +1,168 @@
+{
+  "6": {
+    "id": "6",
+    "name": "Professional Compound Bow",
+    "description": "High-performance compound bow with adjustable draw weight and smooth release.",
+    "price": 599.99,
+    "originalPrice": 699.99,
+    "images": [
+      "/products/product-6-0.jpg",
+      "/products/product-6-1.jpg",
+      "/products/product-6-2.jpg",
+      "/products/product-6-3.jpg",
+      "/products/product-6-4.jpg"
+    ],
+    "category": "archery",
+    "rating": 4.8,
+    "reviewCount": 342,
+    "inStock": true,
+    "display": true,
+    "tags": [
+      "compound-bow",
+      "adjustable",
+      "professional",
+      "precision"
+    ],
+    "features": [
+      "Adjustable draw weight (30-70 lbs)",
+      "Smooth cam system",
+      "Precision sight included",
+      "Carbon fiber construction",
+      "Professional grade"
+    ],
+    "videos": [
+      "/products/product-6-video-0.mp4"
+    ],
+    "reviews": 5
+  },
+  "8": {
+    "id": "8",
+    "name": "Artisan Stainess Steel Cup",
+    "description": "Stylish 300ML stainless steel cup.",
+    "price": 35,
+    "originalPrice": 4624.99,
+    "images": [
+      "/products/product-8-0.jpg",
+      "/products/product-8-1.jpg",
+      "/products/product-8-2.jpg",
+      "/products/product-8-3.jpg",
+      "/products/product-8-4.jpg"
+    ],
+    "category": "kitchen",
+    "rating": 4.9,
+    "reviewCount": 892,
+    "inStock": true,
+    "display": true,
+    "tags": [
+      "chef-knives",
+      "stainless-steel",
+      "professional",
+      "sharp"
+    ],
+    "features": [
+      "High-carbon stainless steel",
+      "Ergonomic handles",
+      "Wooden storage block",
+      "Razor-sharp edge",
+      "Professional grade"
+    ],
+    "reviews": 3
+  },
+  "1760786854717": {
+    "id": "1760786854717",
+    "name": "Lighted Arrow Nocks",
+    "category": "archery",
+    "price": 100,
+    "originalPrice": 200,
+    "description": "Lighted Arrow Nocks",
+    "images": [
+      "/products/product-temp-1.jpg"
+    ],
+    "videos": [],
+    "rating": 3,
+    "reviewCount": 28,
+    "inStock": true,
+    "display": true,
+    "createdAt": "2025-10-18T11:27:34.717Z",
+    "updatedAt": "2025-10-18T11:27:34.718Z"
+  },
+  "1760884221093": {
+    "id": "1760884221093",
+    "name": "Stainless Steel Cup 600ML",
+    "category": "kitchen",
+    "price": 50,
+    "originalPrice": null,
+    "description": "Stainless Steel Cup 600ML",
+    "images": [
+      "/products/product-temp-0-1760884216865.jpg"
+    ],
+    "videos": [],
+    "rating": 0,
+    "reviewCount": 0,
+    "inStock": true,
+    "display": true,
+    "createdAt": "2025-10-19T14:30:21.093Z",
+    "updatedAt": "2025-10-19T14:30:21.093Z"
+  },
+  "1760884681360": {
+    "id": "1760884681360",
+    "name": "Vacuum Jars",
+    "category": "kitchen",
+    "price": 70,
+    "originalPrice": 140,
+    "description": "Stylish and functional vacuum jars keeping your coffee beans, herbs, spices or what ever is put in them fresh and yummy.",
+    "images": [
+      "/products/product-1760884681360-0-1760884693777.jpg",
+      "/products/product-1760884681360-1-1760884693862.jpg",
+      "/products/product-1760884681360-2-1760884693774.jpg",
+      "/products/product-1760884681360-3-1760884693818.jpg",
+      "/products/product-1760884681360-4-1760884693838.jpg",
+      "/products/product-1760884681360-5-1760884693873.jpg"
+    ],
+    "videos": [],
+    "rating": 5,
+    "reviewCount": 3,
+    "inStock": true,
+    "display": true,
+    "variants": [
+      {
+        "id": "small",
+        "name": "Small (500ml)",
+        "type": "size",
+        "price": 65,
+        "originalPrice": 100,
+        "inStock": true,
+        "sku": "VJ-SM-001"
+      },
+      {
+        "id": "medium",
+        "name": "Medium (900ml)",
+        "type": "size",
+        "price": 70,
+        "originalPrice": 140,
+        "inStock": true,
+        "sku": "VJ-MD-001"
+      },
+      {
+        "id": "large",
+        "name": "Large (1200ml)",
+        "type": "size",
+        "price": 75,
+        "originalPrice": 180,
+        "inStock": true,
+        "sku": "VJ-LG-001"
+      },
+      {
+        "id": "extra-large",
+        "name": "Extra Large (1800ml)",
+        "type": "size",
+        "price": 80,
+        "originalPrice": 220,
+        "inStock": true,
+        "sku": "VJ-XL-001"
+      }
+    ],
+    "createdAt": "2025-10-19T14:38:01.360Z",
+    "updatedAt": "2025-10-19T14:38:01.361Z"
+  }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Card Test</title>
+    <style>
+        .aspect-square { aspect-ratio: 1; }
+        .relative { position: relative; }
+        .overflow-hidden { overflow: hidden; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .object-cover { object-fit: cover; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .justify-center { justify-content: center; }
+        .items-center { align-items: center; }
+        .text-gray-500 { color: #6b7280; }
+        .font-medium { font-weight: 500; }
+        .absolute { position: absolute; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .text-2xl { font-size: 1.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Testing Product Card Image Loading</h1>
+    <div id="status">Loading...</div>
+    <div id="products"></div>
+    
+    <script>
+        async function testProductCards() {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                
+                document.getElementById('status').textContent = `Loaded ${products.length} products`;
+                
+                const productsDiv = document.getElementById('products');
+                
+                products.slice(0, 3).forEach(product => {
+                    const mainImage = product.images && product.images.length > 0 && product.images[0] 
+                        ? product.images[0] 
+                        : null;
+                    
+                    const cardDiv = document.createElement('div');
+                    cardDiv.style.margin = '20px';
+                    cardDiv.style.border = '1px solid #ccc';
+                    cardDiv.style.padding = '10px';
+                    cardDiv.style.width = '300px';
+                    
+                    cardDiv.innerHTML = `
+                        <h3>${product.name}</h3>
+                        <div class="aspect-square relative overflow-hidden bg-gray-100" style="width: 200px; height: 200px;">
+                            ${mainImage ? `
+                                <img
+                                    src="${mainImage}"
+                                    alt="${product.name}"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                />
+                            ` : ''}
+                            <div 
+                                class="w-full h-full flex flex-col justify-center items-center text-gray-500 font-medium absolute inset-0"
+                                style="display: ${mainImage ? 'none' : 'flex'}; background-color: #f3f4f6;"
+                            >
+                                <div class="text-2xl mb-2">📦</div>
+                                <div class="text-sm text-center">No Image Available</div>
+                            </div>
+                        </div>
+                        <p>Image path: ${mainImage || 'null'}</p>
+                    `;
+                    
+                    productsDiv.appendChild(cardDiv);
+                });
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+        
+        testProductCards();
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+</head>
+<body>
+    <h1>Testing Image Loading</h1>
+    <div id="status">Loading...</div>
+    <div id="images"></div>
+    
+    <script>
+        async function testImageLoading() {
+            try {
+                const response = await fetch('/api/products/16');
+                const product = await response.json();
+                
+                document.getElementById('status').textContent = 'Product loaded: ' + product.name;
+                
+                const imagesDiv = document.getElementById('images');
+                product.images.forEach((imageSrc, index) => {
+                    const img = document.createElement('img');
+                    img.src = imageSrc;
+                    img.style.width = '200px';
+                    img.style.height = '200px';
+                    img.style.objectFit = 'cover';
+                    img.style.margin = '10px';
+                    img.style.border = '1px solid #ccc';
+                    img.onload = () => {
+                        console.log('Image loaded:', imageSrc);
+                    };
+                    img.onerror = () => {
+                        console.error('Image failed to load:', imageSrc);
+                        img.style.border = '2px solid red';
+                    };
+                    imagesDiv.appendChild(img);
+                });
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+        
+        testImageLoading();
+    </script>
+</body>
+</html>

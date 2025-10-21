@@ -1,0 +1,20 @@
+[
+  {
+    "id": "user_1760846581837_8ibqjgmkq",
+    "firstName": "Tredoux",
+    "lastName": "Willemse",
+    "email": "tredoux555@gmail.com",
+    "phone": "0828077024",
+    "password": "$2b$12$a2oxbnTiSZlG/Rj7i8MYuOhOGK1dcikRG8MiGN9RYdZlxo255prBO",
+    "role": "customer",
+    "createdAt": "2025-10-19T04:03:01.837Z",
+    "updatedAt": "2025-10-19T04:03:01.837Z",
+    "isActive": true,
+    "preferences": {
+      "newsletter": false,
+      "notifications": true
+    },
+    "addresses": [],
+    "orders": []
+  }
+]
