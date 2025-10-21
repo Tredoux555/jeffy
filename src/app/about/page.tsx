@@ -1,4 +1,5 @@
-import { Star, Truck, Shield, Heart, Factory, CheckCircle, Users } from "lucide-react";
+import { Star, Heart, Factory, CheckCircle, Users } from "lucide-react";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -64,18 +65,18 @@ export default function AboutPage() {
             </h2>
             <div className="bg-white rounded-xl p-8 shadow-lg">
               <p className="text-lg text-black leading-relaxed mb-6">
-                At Jeffy, we believe that quality shouldn't be compromised for price. That's why we've built 
+                At Jeffy, we believe that quality shouldn&apos;t be compromised for price. That&apos;s why we&apos;ve built 
                 direct relationships with factories around the world, cutting out middlemen to bring you 
                 exceptional products at unbeatable prices.
               </p>
               <p className="text-lg text-black leading-relaxed mb-6">
                 Our rigorous testing process ensures that every item we sell has been personally tried, 
-                tested, and compared against competitors. We don't just sell products – we curate them. 
+                tested, and compared against competitors. We don&apos;t just sell products – we curate them. 
                 Each item in our catalog has earned its place through quality, durability, and customer satisfaction.
               </p>
               <p className="text-lg text-black leading-relaxed">
-                When you shop with Jeffy, you're not just buying a product – you're investing in something 
-                that has been carefully selected and tested to meet our high standards. We're committed 
+                When you shop with Jeffy, you&apos;re not just buying a product – you&apos;re investing in something 
+                that has been carefully selected and tested to meet our high standards. We&apos;re committed 
                 to bringing you the best, because you deserve nothing less.
               </p>
             </div>
@@ -136,20 +137,20 @@ export default function AboutPage() {
             </h2>
             <div className="bg-white rounded-xl p-8 shadow-lg">
               <p className="text-lg text-black leading-relaxed mb-6">
-                Jeffy was founded on a simple principle: quality products shouldn't cost a fortune. 
+                Jeffy was founded on a simple principle: quality products shouldn&apos;t cost a fortune. 
                 After years of frustration with overpriced, underperforming products, we decided 
                 to take matters into our own hands.
               </p>
               <p className="text-lg text-black leading-relaxed mb-6">
                 We started by building direct relationships with factories worldwide, cutting out 
-                the middlemen who were inflating prices without adding value. But we didn't stop there – 
+                the middlemen who were inflating prices without adding value. But we didn&apos;t stop there – 
                 we implemented a rigorous testing process where every product is personally tried, 
                 tested, and compared against competitors.
               </p>
               <p className="text-lg text-black leading-relaxed">
-                Today, Jeffy represents more than just a store – it's a promise. A promise that 
+                Today, Jeffy represents more than just a store – it&apos;s a promise. A promise that 
                 every product you buy has been carefully selected, thoroughly tested, and proven 
-                to deliver exceptional value. We're not just selling products; we're building trust, 
+                to deliver exceptional value. We&apos;re not just selling products; we&apos;re building trust, 
                 one quality item at a time.
               </p>
             </div>
@@ -164,18 +165,18 @@ export default function AboutPage() {
               Shop with confidence knowing every product has been tested and approved by our team
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/products"
                 className="inline-flex items-center justify-center px-6 py-3 bg-black text-yellow-400 font-semibold rounded-lg hover:bg-black/90 transition-colors"
               >
                 Shop Tested Products
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center px-6 py-3 border-2 border-black text-black font-semibold rounded-lg hover:bg-black hover:text-yellow-400 transition-colors"
               >
                 Contact Our Team
-              </a>
+              </Link>
             </div>
           </div>
         </div>
