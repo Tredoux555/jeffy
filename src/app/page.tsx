@@ -5,11 +5,26 @@ import { Button } from "@/components/ui/button";
 import { products, categories } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { Search, Filter, ArrowRight, Target, ChefHat, Dumbbell, Tent, Sparkles, Smartphone, Home, Gamepad2, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-yellow-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <Search className="h-8 w-8 text-yellow-600" />
+        </div>
+        <p className="text-black font-semibold">Loading products...</p>
+      </div>
+    </div>}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
   const { addItem } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
