@@ -9,8 +9,8 @@ import { Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("jeffy2024");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,12 +20,16 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
 
+    console.log('🔐 Login attempt:', { username, password });
+
     // Simple authentication - in production, use proper auth
     if (username === "admin" && password === "jeffy2024") {
+      console.log('✅ Login successful, setting auth and redirecting');
       localStorage.setItem("adminAuth", "true");
       router.push("/admin/dashboard");
     } else {
-      setError("Invalid credentials");
+      console.log('❌ Login failed: Invalid credentials');
+      setError("Invalid credentials. Use admin / jeffy2024");
     }
     setLoading(false);
   };
@@ -82,6 +86,17 @@ export default function AdminLogin() {
                 disabled={loading}
               >
                 {loading ? "Signing in..." : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setUsername("admin");
+                  setPassword("jeffy2024");
+                  setError("");
+                }}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold"
+              >
+                Quick Login (Auto-fill)
               </Button>
             </form>
             <div className="mt-4 text-center text-sm text-gray-500">
