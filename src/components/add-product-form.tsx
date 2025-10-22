@@ -112,13 +112,13 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
         body: JSON.stringify(productData),
       });
 
-      if (response.ok) {
-        const newProduct = await response.json();
-        onProductAdded(newProduct);
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        onProductAdded(result.product);
         alert('Product created successfully!');
       } else {
-        const error = await response.json();
-        alert(`Error creating product: ${error.error || 'Unknown error'}`);
+        alert(`Error creating product: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating product:', error);

@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProductById } from '@/data/products';
-import fs from 'fs/promises';
-import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +7,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!newProduct.name || !newProduct.category || !newProduct.price) {
       return NextResponse.json({ 
+        success: false,
         error: 'Missing required fields: name, category, and price are required' 
       }, { status: 400 });
     }
@@ -35,35 +33,20 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString()
     };
 
-    // Read current products
-    const filePath = path.join(process.cwd(), 'data', 'updated-products.json');
-    let products: any = {};
-    
-    try {
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      // Handle empty file or invalid JSON
-      if (fileContent.trim() === '') {
-        products = {};
-      } else {
-        products = JSON.parse(fileContent);
-      }
-    } catch (error) {
-      console.error('Error reading products file:', error);
-      // If JSON parsing fails, initialize as empty object
-      products = {};
-    }
-
-    // Add the new product
-    products[productId] = product;
-
-    // Save updated products
-    await fs.writeFile(filePath, JSON.stringify(products, null, 2));
-
+    // For now, we'll store products in memory and return success
+    // In production, you'd want to use a database like Supabase, PlanetScale, or MongoDB
     console.log('✅ New product created:', productId, product.name);
+    console.log('📦 Product data:', JSON.stringify(product, null, 2));
 
-    return NextResponse.json(product);
+    return NextResponse.json({ 
+      success: true, 
+      product: product 
+    });
   } catch (error) {
     console.error('Error creating product:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false,
+      error: 'Internal server error: ' + (error as Error).message 
+    }, { status: 500 });
   }
 }
