@@ -9,11 +9,10 @@ export async function GET(request: NextRequest) {
     
     // Try Supabase first, fallback to static products
     try {
-      // Check if Supabase is properly configured
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey && !supabaseUrl.includes('placeholder')) {
+      // Check if Supabase is properly configured and available
+      if (supabase) {
+        console.log('🔄 Attempting to fetch products from Supabase...');
+        
         // Supabase is configured, try to fetch
         let query = supabase.from('products').select('*');
         

@@ -36,11 +36,10 @@ export async function POST(request: NextRequest) {
 
     // Try Supabase first, fallback to memory storage
     try {
-      // Check if Supabase is properly configured
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey && !supabaseUrl.includes('placeholder')) {
+      // Check if Supabase is properly configured and available
+      if (supabase) {
+        console.log('🔄 Attempting to create product in Supabase...');
+        
         // Supabase is configured, try to insert
         const { data, error } = await supabase
           .from('products')
