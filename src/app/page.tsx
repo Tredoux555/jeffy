@@ -8,6 +8,7 @@ import { Search, Filter, ArrowRight, Target, ChefHat, Dumbbell, Tent, Sparkles, 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { ProductGridSkeleton } from "@/components/product-skeleton";
 
 export default function ProductsPage() {
   return (
@@ -30,6 +31,7 @@ function ProductsPageContent() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [allProducts, setAllProducts] = useState<any[]>(products); // Start with static products
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
 
   // Function to get icon for each category
@@ -75,6 +77,9 @@ function ProductsPageContent() {
       .catch(err => {
         console.error('Error loading products:', err);
         // Keep using static products if API fails
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -221,7 +226,9 @@ function ProductsPageContent() {
 
       {/* Products Grid */}
       <div className="container mx-auto px-4 py-12">
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
+          <ProductGridSkeleton count={8} />
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center mx-auto mb-6">
               <Search className="h-12 w-12 text-yellow-600" />

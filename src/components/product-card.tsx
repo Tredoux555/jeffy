@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { StarRating } from '@/components/ui/star-rating';
 import { ShoppingCart, Heart, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { formatCurrency } from '@/lib/currency';
 import { useState, useEffect, useRef } from 'react';
 import { useFavorites } from '@/lib/favorites';
@@ -84,18 +85,15 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <Link href={`/products/${product.id}`}>
           <div className="aspect-square relative overflow-hidden bg-gray-100">
             {mainImage ? (
-              <img
+              <Image
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                onLoad={() => console.log('✅ ProductCard image loaded successfully:', mainImage)}
-                onError={(e) => {
-                  console.error('❌ ProductCard image failed to load:', mainImage);
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
               />
             ) : null}
             <div 
