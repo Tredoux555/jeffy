@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,22 +62,65 @@ export async function POST(request: NextRequest) {
                     file.type === 'image/webp' ? 'webp' : 'jpg';
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
-    const filePath = join(process.cwd(), 'public', 'products', filename);
 
-    console.log('💾 Saving file to:', filePath);
-    await writeFile(filePath, buffer);
+    // Try Supabase Storage first, fallback to local storage
+    try {
+      if (supabase) {
+        console.log('🔄 Attempting to upload to Supabase Storage...');
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(`public/${filename}`, buffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type
+          });
 
-    const imagePath = `/products/${filename}`;
-    console.log('✅ File saved successfully:', imagePath);
+        if (uploadError) {
+          console.error('Supabase upload error:', uploadError);
+          throw new Error('Supabase upload failed: ' + uploadError.message);
+        }
 
-    return NextResponse.json({ 
-      success: true, 
-      filename: imagePath,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-      isMobile: isMobile
-    });
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(`public/${filename}`);
+
+        console.log('✅ File uploaded to Supabase Storage:', urlData.publicUrl);
+
+        return NextResponse.json({ 
+          success: true, 
+          filename: urlData.publicUrl,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          isMobile: isMobile,
+          storage: 'supabase'
+        });
+      } else {
+        throw new Error('Supabase not configured');
+      }
+    } catch (supabaseError) {
+      console.log('⚠️ Supabase Storage not available, using local storage:', supabaseError);
+      
+      // Fallback: Save to local public folder
+      const filePath = join(process.cwd(), 'public', 'products', filename);
+      console.log('💾 Saving file to:', filePath);
+      await writeFile(filePath, buffer);
+
+      const imagePath = `/products/${filename}`;
+      console.log('✅ File saved locally:', imagePath);
+
+      return NextResponse.json({ 
+        success: true, 
+        filename: imagePath,
+        originalName: file.name,
+        size: file.size,
+        type: file.type,
+        isMobile: isMobile,
+        storage: 'local'
+      });
+    }
   } catch (error) {
     console.error('❌ Error uploading file:', error);
     return NextResponse.json({ 
@@ -85,5 +129,3 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
-
-
