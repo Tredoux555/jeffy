@@ -562,26 +562,17 @@ export default function AdminDashboard() {
                       <Edit className="h-5 w-5" />
                       {creatingProduct ? 'Create New Product' : 'Edit Product'}
                     </span>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          setEditingProduct(null);
-                          setCreatingProduct(false);
-                          setUploadedVideos({});
-                        }}
-                        variant="outline"
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Cancel
-                      </Button>
                     <Button
-                        onClick={creatingProduct ? handleCreateProduct : handleSaveProduct}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setCreatingProduct(false);
+                        setUploadedVideos({});
+                      }}
+                      variant="outline"
                     >
-                        <Save className="mr-2 h-4 w-4" />
-                        {creatingProduct ? 'Create' : 'Save'}
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
                     </Button>
-                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -833,6 +824,30 @@ export default function AdminDashboard() {
                       />
                       <Label htmlFor="display">Display on Website</Label>
                     </div>
+                  </div>
+                  
+                  {/* Action Buttons at Bottom */}
+                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
+                    <Button
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setCreatingProduct(false);
+                        setUploadedVideos({});
+                      }}
+                      variant="outline"
+                      size="lg"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={creatingProduct ? handleCreateProduct : handleSaveProduct}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-black"
+                      size="lg"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {creatingProduct ? 'Create Product' : 'Save Changes'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
