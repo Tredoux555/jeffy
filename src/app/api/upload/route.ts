@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
       imageIndex, 
       fileName: file?.name,
       fileSize: file?.size,
-      fileType: file?.type 
+      fileType: file?.type,
+      userAgent: request.headers.get('user-agent')?.includes('Mobile') ? 'Mobile' : 'Desktop'
     });
 
     if (!file) {
@@ -25,13 +26,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validate file size (max 10MB for mobile, 20MB for desktop)
+    const isMobile = request.headers.get('user-agent')?.includes('Mobile');
+    const maxSize = isMobile ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // 5MB mobile, 10MB desktop
+    
     if (file.size > maxSize) {
-      console.error('❌ File too large:', file.size);
+      console.error('❌ File too large:', file.size, 'max:', maxSize);
       return NextResponse.json({ 
         success: false, 
-        error: 'File too large. Maximum size is 10MB.' 
+        error: `File too large. Maximum size is ${isMobile ? '5MB' : '10MB'}.` 
       }, { status: 400 });
     }
 
@@ -71,7 +74,8 @@ export async function POST(request: NextRequest) {
       filename: imagePath,
       originalName: file.name,
       size: file.size,
-      type: file.type
+      type: file.type,
+      isMobile: isMobile
     });
   } catch (error) {
     console.error('❌ Error uploading file:', error);
