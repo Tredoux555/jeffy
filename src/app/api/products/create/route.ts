@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,32 +16,44 @@ export async function POST(request: NextRequest) {
     // Generate a unique ID (simple timestamp-based for now)
     const productId = Date.now().toString();
     
-    // Set default values for required fields
-    const product = {
+    // Prepare product data for Supabase
+    const productData = {
       id: productId,
       name: newProduct.name,
-      category: newProduct.category,
-      price: parseFloat(newProduct.price),
-      originalPrice: newProduct.originalPrice ? parseFloat(newProduct.originalPrice) : null,
       description: newProduct.description || '',
+      price: parseFloat(newProduct.price),
+      original_price: newProduct.originalPrice ? parseFloat(newProduct.originalPrice) : null,
+      category: newProduct.category,
       images: newProduct.images || [],
       videos: newProduct.videos || [],
       rating: newProduct.rating || 0,
-      reviewCount: newProduct.reviewCount || 0,
-      inStock: newProduct.inStock !== false, // Default to true
-      display: newProduct.display !== false, // Default to true
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      review_count: newProduct.reviewCount || 0,
+      in_stock: newProduct.inStock !== false,
+      display: newProduct.display !== false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
-    // For now, we'll store products in memory and return success
-    // In production, you'd want to use a database like Supabase, PlanetScale, or MongoDB
-    console.log('✅ New product created:', productId, product.name);
-    console.log('📦 Product data:', JSON.stringify(product, null, 2));
+    // Insert product into Supabase
+    const { data, error } = await supabase
+      .from('products')
+      .insert([productData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ 
+        success: false,
+        error: 'Database error: ' + error.message 
+      }, { status: 500 });
+    }
+
+    console.log('✅ New product created in Supabase:', productId, productData.name);
 
     return NextResponse.json({ 
       success: true, 
-      product: product 
+      product: data 
     });
   } catch (error) {
     console.error('Error creating product:', error);
