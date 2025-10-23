@@ -10,13 +10,20 @@ export async function POST(request: NextRequest) {
     const productId = data.get('productId') as string;
     const imageIndex = data.get('imageIndex') as string;
 
-    console.log('📤 Upload API called:', { 
-      productId, 
-      imageIndex, 
+    // Better mobile detection
+    const userAgent = request.headers.get('user-agent') || '';
+    const isMobile = userAgent.includes('Mobile') || 
+                    userAgent.includes('Android') || 
+                    userAgent.includes('iPhone') || 
+                    userAgent.includes('iPad') ||
+                    userAgent.includes('iPod');
+    
+    console.log('📱 Device detection:', { 
+      userAgent: userAgent.substring(0, 100), 
+      isMobile,
       fileName: file?.name,
       fileSize: file?.size,
-      fileType: file?.type,
-      userAgent: request.headers.get('user-agent')?.includes('Mobile') ? 'Mobile' : 'Desktop'
+      fileType: file?.type
     });
 
     if (!file) {
@@ -27,15 +34,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate file size (max 10MB for mobile, 20MB for desktop)
-    const isMobile = request.headers.get('user-agent')?.includes('Mobile');
-    const maxSize = isMobile ? 5 * 1024 * 1024 : 10 * 1024 * 1024; // 5MB mobile, 10MB desktop
+    // Validate file size (more generous limits for mobile)
+    const maxSize = isMobile ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB mobile, 20MB desktop
     
     if (file.size > maxSize) {
       console.error('❌ File too large:', file.size, 'max:', maxSize);
       return NextResponse.json({ 
         success: false, 
-        error: `File too large. Maximum size is ${isMobile ? '5MB' : '10MB'}.` 
+        error: `File too large. Maximum size is ${isMobile ? '10MB' : '20MB'}. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.` 
       }, { status: 400 });
     }
 
@@ -68,7 +74,9 @@ export async function POST(request: NextRequest) {
       if (supabaseAdmin) {
         console.log('🔄 Attempting to upload to Supabase Storage with admin client...');
         
-        // Set a timeout for the upload operation
+        // Set a timeout for the upload operation (longer for mobile)
+        const timeoutDuration = isMobile ? 60000 : 30000; // 60s mobile, 30s desktop
+        
         const uploadPromise = supabaseAdmin.storage
           .from('product-images')
           .upload(filename, buffer, {
@@ -79,7 +87,7 @@ export async function POST(request: NextRequest) {
 
         // Add timeout to prevent hanging
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), 30000)
+          setTimeout(() => reject(new Error(`Upload timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
         );
 
         const { data: uploadData, error: uploadError } = await Promise.race([

@@ -43,13 +43,28 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
     setUploadErrors([]);
     
     try {
-      console.log('📤 Starting image upload:', { imageIndex, fileName: file.name, fileSize: file.size });
+      console.log('📤 Starting image upload:', { 
+        imageIndex, 
+        fileName: file.name, 
+        fileSize: file.size,
+        fileType: file.type,
+        isMobile: /Mobile|Android|iPhone|iPad|iPod/.test(navigator.userAgent)
+      });
+      
+      // Validate file size for mobile
+      const isMobile = /Mobile|Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+      const maxSize = isMobile ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB mobile, 20MB desktop
+      
+      if (file.size > maxSize) {
+        throw new Error(`File too large. Maximum size is ${isMobile ? '10MB' : '20MB'}. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+      }
       
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('productId', 'temp'); // Temporary ID for new products
       uploadFormData.append('imageIndex', imageIndex.toString());
       
+      console.log('📤 Uploading to API...');
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: uploadFormData,
