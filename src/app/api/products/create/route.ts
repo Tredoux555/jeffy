@@ -57,9 +57,28 @@ export async function POST(request: NextRequest) {
         console.log('📊 Created product data:', data);
         console.log('🔍 Product category:', data?.category);
         console.log('👁️ Product display:', data?.display);
+        
+        // Transform data to match frontend expectations (camelCase)
+        const transformedProduct = {
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          originalPrice: data.original_price,
+          category: data.category,
+          images: data.images || [],
+          videos: data.videos || [],
+          rating: data.rating,
+          reviewCount: data.review_count,
+          inStock: data.in_stock,
+          display: data.display,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        };
+        
         return NextResponse.json({ 
           success: true, 
-          product: data 
+          product: transformedProduct 
         });
       } else {
         throw new Error('Supabase not configured');

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductByIdWithUpdates } from '@/data/products-server';
 import { getProductById } from '@/data/products';
+import { supabaseAdmin } from '@/lib/supabase';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -49,13 +50,71 @@ export async function PUT(
 
     const updatedProduct = await request.json();
     
-    // Read current products
+    // Try Supabase first
+    if (supabaseAdmin) {
+      try {
+        console.log('🔄 Updating product in Supabase:', productId);
+        
+        // Prepare update data with snake_case field names
+        const updateData: any = {};
+        if (updatedProduct.name !== undefined) updateData.name = updatedProduct.name;
+        if (updatedProduct.description !== undefined) updateData.description = updatedProduct.description;
+        if (updatedProduct.price !== undefined) updateData.price = updatedProduct.price;
+        if (updatedProduct.originalPrice !== undefined) updateData.original_price = updatedProduct.originalPrice;
+        if (updatedProduct.category !== undefined) updateData.category = updatedProduct.category;
+        if (updatedProduct.images !== undefined) updateData.images = updatedProduct.images;
+        if (updatedProduct.videos !== undefined) updateData.videos = updatedProduct.videos;
+        if (updatedProduct.rating !== undefined) updateData.rating = updatedProduct.rating;
+        if (updatedProduct.reviewCount !== undefined) updateData.review_count = updatedProduct.reviewCount;
+        if (updatedProduct.inStock !== undefined) updateData.in_stock = updatedProduct.inStock;
+        if (updatedProduct.display !== undefined) updateData.display = updatedProduct.display;
+        updateData.updated_at = new Date().toISOString();
+        
+        const { data, error } = await supabaseAdmin
+          .from('products')
+          .update(updateData)
+          .eq('id', productId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw new Error('Database error: ' + error.message);
+        }
+
+        console.log('✅ Product updated in Supabase:', productId);
+        
+        // Transform response to camelCase
+        const transformedProduct = {
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          originalPrice: data.original_price,
+          category: data.category,
+          images: data.images || [],
+          videos: data.videos || [],
+          rating: data.rating,
+          reviewCount: data.review_count,
+          inStock: data.in_stock,
+          display: data.display,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        };
+
+        return NextResponse.json(transformedProduct);
+      } catch (supabaseError) {
+        console.error('⚠️ Supabase update failed, falling back to file system:', supabaseError);
+      }
+    }
+    
+    // Fallback to file system
+    console.log('Using file system fallback for product update');
     const filePath = path.join(process.cwd(), 'data', 'updated-products.json');
     let products: any = {};
     
     try {
       const fileContent = await fs.readFile(filePath, 'utf8');
-      // Handle empty file or invalid JSON
       if (fileContent.trim() === '') {
         products = {};
       } else {
@@ -63,25 +122,18 @@ export async function PUT(
       }
     } catch (error) {
       console.error('Error reading products file:', error);
-      // If JSON parsing fails, initialize as empty object
       products = {};
     }
 
-    // Check if product exists in updated products, if not get from original products
     if (!products[productId]) {
-      // Try to get the original product first
       const originalProduct = getProductById(productId);
       if (!originalProduct) {
         return NextResponse.json({ error: 'Product not found' }, { status: 404 });
       }
-      // Initialize with original product data
       products[productId] = originalProduct;
     }
 
-    // Update the product
     products[productId] = { ...products[productId], ...updatedProduct };
-
-    // Save updated products
     await fs.writeFile(filePath, JSON.stringify(products, null, 2));
 
     return NextResponse.json(products[productId]);
