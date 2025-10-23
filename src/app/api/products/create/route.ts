@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
         console.log('👁️ Product display:', data?.display);
         return NextResponse.json({ 
           success: true, 
+          id: data.id,
           product: data 
         });
       } else {
@@ -72,7 +73,8 @@ export async function POST(request: NextRequest) {
       console.log('📦 Product data:', JSON.stringify(productData, null, 2));
       
       return NextResponse.json({ 
-        success: true, 
+        success: true,
+        id: productData.id,
         product: productData,
         message: 'Product created successfully (stored in memory - set up Supabase for permanent storage)'
       });
