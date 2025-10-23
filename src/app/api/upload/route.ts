@@ -167,6 +167,8 @@ export async function POST(request: NextRequest) {
           .getPublicUrl(filename);
 
         console.log('✅ File uploaded to Supabase Storage:', urlData.publicUrl);
+        console.log('🔍 Upload data:', uploadData);
+        console.log('🔍 URL data:', urlData);
 
         return NextResponse.json({ 
           success: true, 

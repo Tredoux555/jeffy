@@ -241,7 +241,16 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               console.error('Image preview failed:', image);
+                              console.error('Image element:', e.currentTarget);
                               e.currentTarget.style.display = 'none';
+                              // Show error message
+                              const errorDiv = document.createElement('div');
+                              errorDiv.className = 'w-full h-full flex items-center justify-center text-xs text-red-500';
+                              errorDiv.textContent = 'Failed to load';
+                              e.currentTarget.parentNode?.appendChild(errorDiv);
+                            }}
+                            onLoad={() => {
+                              console.log('✅ Image loaded successfully:', image);
                             }}
                           />
                         </div>
