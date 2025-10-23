@@ -85,15 +85,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <Link href={`/products/${product.id}`}>
           <div className="aspect-square relative overflow-hidden bg-gray-100">
             {mainImage ? (
-              <Image
+              <img
                 src={mainImage}
                 alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
-                placeholder="blur"
-                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                 onError={(e) => {
                   console.error('❌ Image failed to load:', mainImage);
                   console.error('Image element:', e.currentTarget);

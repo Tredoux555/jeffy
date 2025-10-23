@@ -45,18 +45,21 @@ export function AdminProductCard({ product, onToggleDisplay }: AdminProductCardP
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="relative">
         <div className="aspect-square relative overflow-hidden bg-gray-100">
-          {mainImage ? (
-            <Image
-              src={mainImage}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            />
-          ) : (
+            {mainImage ? (
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                onError={(e) => {
+                  console.error('❌ Admin image failed to load:', mainImage);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={() => {
+                  console.log('✅ Admin image loaded successfully:', mainImage);
+                }}
+              />
+            ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <span className="text-sm">No Image Available</span>
             </div>

@@ -37,10 +37,10 @@ export function BackButton({ fallbackUrl = "/", className = "" }: BackButtonProp
       onClick={handleBack}
       variant="outline"
       size="icon"
-      className={`fixed bottom-4 left-4 z-50 bg-white/90 backdrop-blur-sm border-gray-300 shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
+      className={`fixed bottom-4 left-4 z-50 bg-gradient-to-r from-gray-300 to-gray-400 backdrop-blur-sm border-gray-500 shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
       aria-label="Go back"
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="h-4 w-4 text-white" />
     </Button>
   );
 }
