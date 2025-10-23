@@ -47,15 +47,28 @@ For permanent product storage:
 4. Click **"Run"**
 5. ✅ Your products table is created!
 
-### Step 3: Get Your API Keys
+### Step 3: Set Up Storage for Images
+
+1. In your Supabase dashboard, go to **Storage**
+2. Click **"New Bucket"**
+3. Create bucket with these settings:
+   - Name: `product-images`
+   - **Public bucket:** ✅ Check this box
+   - File size limit: 10 MB
+   - Allowed MIME types: `image/jpeg, image/jpg, image/png, image/webp`
+4. Click **"Create bucket"**
+
+**OR** skip this step - the app will auto-create the bucket on first upload!
+
+### Step 4: Get Your API Keys
 
 1. Go to **Settings** → **API** in your Supabase dashboard
 2. Copy these three values:
    - **Project URL** (example: `https://abcdefgh.supabase.co`)
    - **Anon/Public key** (starts with `eyJ...`)
-   - **Service Role key** (also starts with `eyJ...`)
+   - **⚠️ Service Role key** (also starts with `eyJ...`) - **Required for image uploads!**
 
-### Step 4: Update Environment Variables
+### Step 5: Update Environment Variables
 
 1. Open the `.env.local` file in your project root
 2. Replace the placeholder values with your actual Supabase credentials:
@@ -68,7 +81,18 @@ NEXT_PUBLIC_SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 3. Save the file
 
-### Step 5: Restart Your Server
+⚠️ **IMPORTANT:** Make sure to copy all THREE keys, especially the service role key!
+
+### Step 6: Deploy Environment Variables to Vercel
+
+1. Go to your Vercel dashboard
+2. Select your project
+3. Go to **Settings** → **Environment Variables**
+4. Add all three variables (same as in `.env.local`)
+5. Select **Production**, **Preview**, and **Development** for each
+6. Click **Save**
+
+### Step 7: Restart Your Server
 
 ```bash
 # Stop the server (Ctrl+C)
@@ -113,12 +137,19 @@ npm run dev
 ### Problem: Products disappear after restart
 **Solution:** You're in fallback mode. Set up Supabase for permanent storage.
 
+### Problem: Image uploads fail
+**Solution:** 
+1. Make sure service role key is set in `.env.local` 
+2. Check `SUPABASE-STORAGE-COMPLETE-SETUP.md` for detailed guide
+3. Verify bucket exists or let app create it automatically
+
 ### Problem: Upload script shows fetch error
 **Solution:** Make sure you're using Node.js 18+ (check with `node --version`)
 
 ## 📚 Additional Resources
 
-- `SUPABASE-SETUP.md` - Detailed Supabase setup guide
+- `SUPABASE-STORAGE-COMPLETE-SETUP.md` - **Image upload setup guide** ⭐
+- `SUPABASE-SETUP.md` - Detailed Supabase database setup
 - `product-upload-template.js` - Template for creating custom products
 - `data/updated-products.json` - Example product data structure
 
