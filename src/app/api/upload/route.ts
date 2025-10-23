@@ -63,43 +63,13 @@ export async function POST(request: NextRequest) {
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
 
-    // Try Supabase Storage first, fallback to local storage
+    // Try Supabase Storage with timeout
     try {
       if (supabase) {
         console.log('🔄 Attempting to upload to Supabase Storage...');
         
-        // First, check if bucket exists and create if needed
-        const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-        
-        if (listError) {
-          console.error('Error listing buckets:', listError);
-          throw new Error('Cannot access Supabase Storage: ' + listError.message);
-        }
-        
-        const bucketExists = buckets?.some(bucket => bucket.name === 'product-images');
-        
-        if (!bucketExists) {
-          console.log('🔄 Bucket "product-images" not found, creating it...');
-          
-          const { error: createError } = await supabase.storage
-            .createBucket('product-images', {
-              public: true,
-              allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-              fileSizeLimit: 10 * 1024 * 1024, // 10MB
-            });
-
-          if (createError) {
-            console.error('Failed to create bucket:', createError);
-            throw new Error('Supabase bucket creation failed: ' + createError.message);
-          }
-          
-          console.log('✅ Bucket "product-images" created successfully');
-        } else {
-          console.log('✅ Bucket "product-images" already exists');
-        }
-        
-        // Now upload the file
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        // Set a timeout for the upload operation
+        const uploadPromise = supabase.storage
           .from('product-images')
           .upload(filename, buffer, {
             cacheControl: '3600',
@@ -107,9 +77,88 @@ export async function POST(request: NextRequest) {
             contentType: file.type
           });
 
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), 30000)
+        );
+
+        const { data: uploadData, error: uploadError } = await Promise.race([
+          uploadPromise,
+          timeoutPromise
+        ]) as any;
+
         if (uploadError) {
           console.error('Supabase upload error:', uploadError);
-          throw new Error('Supabase upload failed: ' + uploadError.message);
+          
+          // If bucket doesn't exist, try to create it quickly
+          if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
+            console.log('🔄 Bucket not found, creating it...');
+            
+            const createPromise = supabase.storage
+              .createBucket('product-images', {
+                public: true,
+                allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+                fileSizeLimit: 10 * 1024 * 1024, // 10MB
+              });
+
+            const createTimeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Bucket creation timeout')), 15000)
+            );
+
+            const { error: createError } = await Promise.race([
+              createPromise,
+              createTimeoutPromise
+            ]) as any;
+
+            if (createError) {
+              console.error('Failed to create bucket:', createError);
+              throw new Error('Supabase bucket creation failed: ' + createError.message);
+            }
+            
+            console.log('✅ Bucket created, retrying upload...');
+            
+            // Retry upload with timeout
+            const retryPromise = supabase.storage
+              .from('product-images')
+              .upload(filename, buffer, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: file.type
+              });
+
+            const retryTimeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Retry upload timeout')), 30000)
+            );
+
+            const { data: retryData, error: retryError } = await Promise.race([
+              retryPromise,
+              retryTimeoutPromise
+            ]) as any;
+
+            if (retryError) {
+              console.error('Retry upload failed:', retryError);
+              throw new Error('Supabase upload failed after bucket creation: ' + retryError.message);
+            }
+
+            // Get public URL for retry
+            const { data: urlData } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(filename);
+
+            console.log('✅ File uploaded to Supabase Storage (after bucket creation):', urlData.publicUrl);
+
+            return NextResponse.json({ 
+              success: true, 
+              filename: urlData.publicUrl,
+              originalName: file.name,
+              size: file.size,
+              type: file.type,
+              isMobile: isMobile,
+              storage: 'supabase'
+            });
+          } else {
+            throw new Error('Supabase upload failed: ' + uploadError.message);
+          }
         }
 
         // Get public URL
@@ -134,10 +183,10 @@ export async function POST(request: NextRequest) {
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       
-      // For Vercel, we can't use local storage, so return an error
+      // Return a more helpful error message
       return NextResponse.json({ 
         success: false, 
-        error: 'Image upload failed. Please check your Supabase configuration. Error: ' + (supabaseError as Error).message
+        error: 'Image upload failed. This might be due to Supabase Storage configuration. Please check your bucket settings or try again. Error: ' + (supabaseError as Error).message
       }, { status: 500 });
     }
   } catch (error) {
