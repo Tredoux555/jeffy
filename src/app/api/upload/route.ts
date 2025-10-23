@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,13 +63,13 @@ export async function POST(request: NextRequest) {
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
 
-    // Try Supabase Storage with timeout
+    // Try Supabase Storage with admin client (service role key)
     try {
-      if (supabase) {
-        console.log('🔄 Attempting to upload to Supabase Storage...');
+      if (supabaseAdmin) {
+        console.log('🔄 Attempting to upload to Supabase Storage with admin client...');
         
         // Set a timeout for the upload operation
-        const uploadPromise = supabase.storage
+        const uploadPromise = supabaseAdmin.storage
           .from('product-images')
           .upload(filename, buffer, {
             cacheControl: '3600',
@@ -92,9 +92,9 @@ export async function POST(request: NextRequest) {
           
           // If bucket doesn't exist, try to create it quickly
           if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
-            console.log('🔄 Bucket not found, creating it...');
+            console.log('🔄 Bucket not found, creating it with admin client...');
             
-            const createPromise = supabase.storage
+            const createPromise = supabaseAdmin.storage
               .createBucket('product-images', {
                 public: true,
                 allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
             console.log('✅ Bucket created, retrying upload...');
             
             // Retry upload with timeout
-            const retryPromise = supabase.storage
+            const retryPromise = supabaseAdmin.storage
               .from('product-images')
               .upload(filename, buffer, {
                 cacheControl: '3600',
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Get public URL for retry
-            const { data: urlData } = supabase.storage
+            const { data: urlData } = supabaseAdmin.storage
               .from('product-images')
               .getPublicUrl(filename);
 
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
               size: file.size,
               type: file.type,
               isMobile: isMobile,
-              storage: 'supabase'
+              storage: 'supabase-admin'
             });
           } else {
             throw new Error('Supabase upload failed: ' + uploadError.message);
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get public URL
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = supabaseAdmin.storage
           .from('product-images')
           .getPublicUrl(filename);
 
@@ -177,10 +177,10 @@ export async function POST(request: NextRequest) {
           size: file.size,
           type: file.type,
           isMobile: isMobile,
-          storage: 'supabase'
+          storage: 'supabase-admin'
         });
       } else {
-        throw new Error('Supabase not configured');
+        throw new Error('Supabase admin client not configured');
       }
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       // Return a more helpful error message
       return NextResponse.json({ 
         success: false, 
-        error: 'Image upload failed. This might be due to Supabase Storage configuration. Please check your bucket settings or try again. Error: ' + (supabaseError as Error).message
+        error: 'Image upload failed. Service role key not configured or Supabase Storage issue. Error: ' + (supabaseError as Error).message
       }, { status: 500 });
     }
   } catch (error) {
