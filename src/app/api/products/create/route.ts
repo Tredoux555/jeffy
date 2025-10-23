@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,11 +37,12 @@ export async function POST(request: NextRequest) {
     // Try Supabase first, fallback to memory storage
     try {
       // Check if Supabase is properly configured and available
-      if (supabase) {
-        console.log('🔄 Attempting to create product in Supabase...');
+      if (supabaseAdmin) {
+        console.log('🔄 Attempting to create product in Supabase with admin client...');
+        console.log('📦 Product data:', JSON.stringify(productData, null, 2));
         
-        // Supabase is configured, try to insert
-        const { data, error } = await supabase
+        // Supabase is configured, try to insert with admin client
+        const { data, error } = await supabaseAdmin
           .from('products')
           .insert([productData])
           .select()
@@ -53,6 +54,9 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('✅ New product created in Supabase:', productId, productData.name);
+        console.log('📊 Created product data:', data);
+        console.log('🔍 Product category:', data?.category);
+        console.log('👁️ Product display:', data?.display);
         return NextResponse.json({ 
           success: true, 
           product: data 
