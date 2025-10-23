@@ -68,7 +68,37 @@ export async function POST(request: NextRequest) {
       if (supabase) {
         console.log('🔄 Attempting to upload to Supabase Storage...');
         
-        // Try to upload to the bucket (without public/ prefix)
+        // First, check if bucket exists and create if needed
+        const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+        
+        if (listError) {
+          console.error('Error listing buckets:', listError);
+          throw new Error('Cannot access Supabase Storage: ' + listError.message);
+        }
+        
+        const bucketExists = buckets?.some(bucket => bucket.name === 'product-images');
+        
+        if (!bucketExists) {
+          console.log('🔄 Bucket "product-images" not found, creating it...');
+          
+          const { error: createError } = await supabase.storage
+            .createBucket('product-images', {
+              public: true,
+              allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+              fileSizeLimit: 10 * 1024 * 1024, // 10MB
+            });
+
+          if (createError) {
+            console.error('Failed to create bucket:', createError);
+            throw new Error('Supabase bucket creation failed: ' + createError.message);
+          }
+          
+          console.log('✅ Bucket "product-images" created successfully');
+        } else {
+          console.log('✅ Bucket "product-images" already exists');
+        }
+        
+        // Now upload the file
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filename, buffer, {
@@ -79,56 +109,7 @@ export async function POST(request: NextRequest) {
 
         if (uploadError) {
           console.error('Supabase upload error:', uploadError);
-          
-          // If bucket doesn't exist, try to create it
-          if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
-            console.log('🔄 Bucket not found, attempting to create it...');
-            
-            const { error: createError } = await supabase.storage
-              .createBucket('product-images', {
-                public: true,
-                allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-                fileSizeLimit: 10 * 1024 * 1024, // 10MB
-              });
-
-            if (createError) {
-              console.error('Failed to create bucket:', createError);
-              throw new Error('Supabase bucket creation failed: ' + createError.message);
-            }
-
-            // Retry upload after creating bucket
-            const { data: retryData, error: retryError } = await supabase.storage
-              .from('product-images')
-              .upload(filename, buffer, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: file.type
-              });
-
-            if (retryError) {
-              console.error('Retry upload failed:', retryError);
-              throw new Error('Supabase upload failed after bucket creation: ' + retryError.message);
-            }
-
-            // Get public URL for retry
-            const { data: urlData } = supabase.storage
-              .from('product-images')
-              .getPublicUrl(filename);
-
-            console.log('✅ File uploaded to Supabase Storage (after bucket creation):', urlData.publicUrl);
-
-            return NextResponse.json({ 
-              success: true, 
-              filename: urlData.publicUrl,
-              originalName: file.name,
-              size: file.size,
-              type: file.type,
-              isMobile: isMobile,
-              storage: 'supabase'
-            });
-          } else {
-            throw new Error('Supabase upload failed: ' + uploadError.message);
-          }
+          throw new Error('Supabase upload failed: ' + uploadError.message);
         }
 
         // Get public URL
@@ -151,25 +132,13 @@ export async function POST(request: NextRequest) {
         throw new Error('Supabase not configured');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase Storage not available, using local storage:', supabaseError);
+      console.log('⚠️ Supabase Storage failed:', supabaseError);
       
-      // Fallback: Save to local public folder
-      const filePath = join(process.cwd(), 'public', 'products', filename);
-      console.log('💾 Saving file to:', filePath);
-      await writeFile(filePath, buffer);
-
-      const imagePath = `/products/${filename}`;
-      console.log('✅ File saved locally:', imagePath);
-
+      // For Vercel, we can't use local storage, so return an error
       return NextResponse.json({ 
-        success: true, 
-        filename: imagePath,
-        originalName: file.name,
-        size: file.size,
-        type: file.type,
-        isMobile: isMobile,
-        storage: 'local'
-      });
+        success: false, 
+        error: 'Image upload failed. Please check your Supabase configuration. Error: ' + (supabaseError as Error).message
+      }, { status: 500 });
     }
   } catch (error) {
     console.error('❌ Error uploading file:', error);
