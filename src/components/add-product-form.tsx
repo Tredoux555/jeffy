@@ -45,40 +45,24 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
     try {
       console.log('📤 Starting image upload:', { imageIndex, fileName: file.name, fileSize: file.size });
       
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('productId', 'temp'); // Temporary ID for new products
-      formData.append('imageIndex', imageIndex.toString());
+      // TEMPORARY WORKAROUND: Skip upload and use placeholder
+      // This allows you to create products while we fix Supabase Storage
+      console.log('⚠️ Using temporary placeholder image (Supabase Storage not set up yet)');
       
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const placeholderUrl = `https://via.placeholder.com/400x400/FFD700/000000?text=${encodeURIComponent(file.name)}`;
       
-      console.log('📤 Upload response status:', response.status);
+      const newImages = [...(formData.images || [])];
+      newImages[imageIndex] = placeholderUrl;
+      setFormData(prev => ({
+        ...prev,
+        images: newImages
+      }));
       
-      if (response.ok) {
-        const result = await response.json();
-        console.log('📤 Upload result:', result);
-        
-        if (result.success) {
-          const imageUrl = result.filename;
-          
-          const newImages = [...(formData.images || [])];
-          newImages[imageIndex] = imageUrl;
-          setFormData(prev => ({
-            ...prev,
-            images: newImages
-          }));
-          
-          console.log('✅ Image uploaded successfully:', imageUrl);
-        } else {
-          throw new Error(result.error || 'Upload failed');
-        }
-      } else {
-        const errorResult = await response.json();
-        throw new Error(errorResult.error || `Upload failed with status ${response.status}`);
-      }
+      console.log('✅ Using placeholder image:', placeholderUrl);
+      
+      // Show info message
+      setUploadErrors(prev => [...prev, `Image ${imageIndex + 1}: Using placeholder (Supabase Storage not configured)`]);
+      
     } catch (error) {
       console.error('❌ Error uploading image:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
@@ -281,11 +265,14 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
               
               {/* Show upload errors */}
               {uploadErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded p-3">
-                  <div className="text-red-600 font-semibold text-sm mb-2">Upload Errors:</div>
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                  <div className="text-yellow-700 font-semibold text-sm mb-2">📝 Image Status:</div>
                   {uploadErrors.map((error, index) => (
-                    <div key={index} className="text-red-600 text-sm">• {error}</div>
+                    <div key={index} className="text-yellow-600 text-sm">• {error}</div>
                   ))}
+                  <div className="text-yellow-600 text-xs mt-2">
+                    💡 You can still create the product! Set up Supabase Storage later for real image uploads.
+                  </div>
                 </div>
               )}
             </div>
