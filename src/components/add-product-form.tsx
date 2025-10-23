@@ -45,14 +45,14 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
     try {
       console.log('📤 Starting image upload:', { imageIndex, fileName: file.name, fileSize: file.size });
       
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('productId', 'temp'); // Temporary ID for new products
-      formData.append('imageIndex', imageIndex.toString());
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('productId', 'temp'); // Temporary ID for new products
+      uploadFormData.append('imageIndex', imageIndex.toString());
       
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       });
       
       console.log('📤 Upload response status:', response.status);
