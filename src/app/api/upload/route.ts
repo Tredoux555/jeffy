@@ -73,10 +73,7 @@ export async function POST(request: NextRequest) {
     try {
       if (!supabaseAdmin) {
         console.error('❌ Supabase admin client not configured');
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Image upload service not configured. Please check Supabase service role key.' 
-        }, { status: 500 });
+        throw new Error('Supabase admin client not configured');
       }
       
       console.log('🔄 Attempting to upload to Supabase Storage with admin client...');
@@ -201,31 +198,52 @@ export async function POST(request: NextRequest) {
           isMobile: isMobile,
           storage: 'supabase-admin'
         });
-      } else {
-        throw new Error('Supabase admin client not configured');
-      }
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       
-      // Fallback: Create placeholder image URL
-      console.log('🔄 Creating placeholder image as fallback...');
+      // Fallback: Save to local public/products folder
+      console.log('🔄 Saving to local storage as fallback...');
       
-      const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
-      const color = colors[parseInt(imageIndex || '0') % colors.length];
-      const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
-      
-      console.log('✅ Created placeholder image:', placeholderUrl);
-      
-      return NextResponse.json({ 
-        success: true, 
-        filename: placeholderUrl,
-        originalName: file.name,
-        size: file.size,
-        type: file.type,
-        isMobile: isMobile,
-        storage: 'placeholder-fallback',
-        warning: 'Supabase upload failed, using placeholder image'
-      });
+      try {
+        const publicPath = join(process.cwd(), 'public', 'products', filename);
+        await writeFile(publicPath, buffer);
+        
+        const publicUrl = `/products/${filename}`;
+        console.log('✅ File saved locally:', publicUrl);
+        
+        return NextResponse.json({ 
+          success: true, 
+          filename: publicUrl,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          isMobile: isMobile,
+          storage: 'local-fallback',
+          warning: 'Supabase upload failed, saved locally'
+        });
+      } catch (localError) {
+        console.error('❌ Local save failed:', localError);
+        
+        // Last resort: Create placeholder image URL
+        console.log('🔄 Creating placeholder image as last resort...');
+        
+        const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
+        const color = colors[parseInt(imageIndex || '0') % colors.length];
+        const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
+        
+        console.log('✅ Created placeholder image:', placeholderUrl);
+        
+        return NextResponse.json({ 
+          success: true, 
+          filename: placeholderUrl,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          isMobile: isMobile,
+          storage: 'placeholder-fallback',
+          warning: 'All upload methods failed, using placeholder image'
+        });
+      }
     }
   } catch (error) {
     console.error('❌ Error uploading file:', error);
