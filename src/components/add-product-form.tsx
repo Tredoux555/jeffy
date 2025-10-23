@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, Upload, Image as ImageIcon } from "lucide-react";
+import { LoadingOverlay } from "@/components/loading-overlay";
 
 interface AddProductFormProps {
   category: string;
@@ -164,6 +165,12 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <LoadingOverlay 
+        isVisible={saving} 
+        message="Creating Product..." 
+        subMessage="Saving your product to the database"
+      />
+      
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-300">
         <CardHeader className="bg-gradient-to-r from-yellow-400 to-yellow-500">
           <div className="flex items-center justify-between">
@@ -282,11 +289,12 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
                           className="w-full text-sm font-semibold"
                           disabled={uploading}
                         />
-                        {uploading && (
-                          <div className="text-sm text-blue-600 font-semibold">
-                            📤 Uploading...
-                          </div>
-                        )}
+                            {uploading && (
+                              <div className="text-sm text-blue-600 font-semibold flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                Uploading image...
+                              </div>
+                            )}
                       </div>
                     )}
                   </div>

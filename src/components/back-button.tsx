@@ -23,11 +23,8 @@ export function BackButton({ fallbackUrl = "/", className = "" }: BackButtonProp
   }, []);
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push(fallbackUrl);
-    }
+    // Always go to main products page instead of browser back
+    router.push('/');
   };
 
   if (!showBackButton) return null;
