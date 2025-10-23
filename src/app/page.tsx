@@ -68,19 +68,31 @@ function ProductsPageContent() {
 
   // Load products from API after component mounts
   useEffect(() => {
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        console.log('Loaded', data.length, 'products from API');
-        setAllProducts(data);
-      })
-      .catch(err => {
-        console.error('Error loading products:', err);
+    const loadProducts = async () => {
+      try {
+        console.log('🔄 Loading products from API...');
+        const response = await fetch('/api/products', {
+          cache: 'force-cache', // Add caching
+          next: { revalidate: 300 } // Revalidate every 5 minutes
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Loaded', data.length, 'products from API');
+          setAllProducts(data);
+        } else {
+          console.error('❌ Failed to load products:', response.status);
+          // Keep using static products if API fails
+        }
+      } catch (err) {
+        console.error('❌ Error loading products:', err);
         // Keep using static products if API fails
-      })
-      .finally(() => {
+      } finally {
         setIsLoading(false);
-      });
+      }
+    };
+
+    loadProducts();
   }, []);
 
   // Listen for updates

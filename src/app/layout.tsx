@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
 import { FavoritesProvider } from "@/lib/favorites";
 import { Header } from "@/components/header";
+import { BackButton } from "@/components/back-button";
 import { NotificationPermission } from "@/components/notification-permission";
 import { BackgroundSync } from "@/components/background-sync";
 import { PushNotificationService } from "@/components/push-notification-service";
@@ -54,6 +55,7 @@ export default function RootLayout({
                   <OfflineIndicator />
                   <Header />
                   {children}
+                  <BackButton />
                   <NotificationPermission />
                   <BackgroundSync />
                   <PushNotificationService />
