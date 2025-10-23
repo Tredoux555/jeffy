@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { products, categories } from "@/data/products";
 import { Search, Filter, ArrowRight, Plus, LogOut, Edit, Save, X, Upload, Image as ImageIcon, Video } from "lucide-react";
 import { DragDropUpload } from "@/components/drag-drop-upload";
+import { SampleImageUploader } from "@/components/sample-image-uploader";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -457,6 +458,11 @@ export default function AdminDashboard() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Sample Image Uploader */}
+        <div className="mb-8">
+          <SampleImageUploader />
+        </div>
+
         {/* Search and Filter */}
         <div className="max-w-4xl mx-auto mb-8">
           <div className="flex flex-col md:flex-row gap-4">
