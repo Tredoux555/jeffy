@@ -12,6 +12,40 @@ export function SampleImageUploader() {
   const [uploadingOriginal, setUploadingOriginal] = useState(false);
   const [originalResult, setOriginalResult] = useState<any>(null);
   const [originalError, setOriginalError] = useState<string>("");
+  const [fixingImages, setFixingImages] = useState(false);
+  const [fixResult, setFixResult] = useState<any>(null);
+  const [fixError, setFixError] = useState<string>("");
+
+  const handleFixImages = async () => {
+    setFixingImages(true);
+    setFixError("");
+    setFixResult(null);
+
+    try {
+      console.log('🚀 Starting image fix...');
+      
+      const response = await fetch('/api/fix-images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        console.log('✅ Images fixed successfully:', data);
+        setFixResult(data);
+      } else {
+        throw new Error(data.error || 'Fix failed');
+      }
+    } catch (error) {
+      console.error('❌ Error fixing images:', error);
+      setFixError(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setFixingImages(false);
+    }
+  };
 
   const handleUploadSampleImages = async () => {
     setUploading(true);
@@ -85,11 +119,30 @@ export function SampleImageUploader() {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-gray-600">
+          <strong>Quick Fix:</strong> Add working placeholder images to all products immediately.<br/>
           <strong>Step 1:</strong> Upload the original 11 products to Supabase first.<br/>
           <strong>Step 2:</strong> Then generate sample images for all products.
         </p>
         
         <div className="space-y-4">
+          <Button
+            onClick={handleFixImages}
+            disabled={fixingImages}
+            className="w-full bg-red-600 hover:bg-red-700 text-white"
+          >
+            {fixingImages ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Fixing Images...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Quick Fix: Add Working Images Now
+              </>
+            )}
+          </Button>
+
           <Button
             onClick={handleUploadOriginalProducts}
             disabled={uploadingOriginal}
@@ -126,6 +179,29 @@ export function SampleImageUploader() {
             )}
           </Button>
         </div>
+
+        {fixError && (
+          <div className="bg-red-50 border border-red-200 rounded p-3">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <span className="font-semibold">Quick Fix Failed</span>
+            </div>
+            <p className="text-red-600 text-sm mt-1">{fixError}</p>
+          </div>
+        )}
+
+        {fixResult && (
+          <div className="bg-green-50 border border-green-200 rounded p-3">
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="h-4 w-4" />
+              <span className="font-semibold">Images Fixed!</span>
+            </div>
+            <div className="text-green-600 text-sm mt-2">
+              <p>✅ Products updated: {fixResult.summary.updatedCount}/{fixResult.summary.totalProducts}</p>
+              <p>✅ All products now have working placeholder images</p>
+            </div>
+          </div>
+        )}
 
         {originalError && (
           <div className="bg-red-50 border border-red-200 rounded p-3">
