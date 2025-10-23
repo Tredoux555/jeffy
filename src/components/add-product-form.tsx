@@ -29,6 +29,7 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -39,7 +40,11 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
 
   const handleImageUpload = async (imageIndex: number, file: File) => {
     setUploading(true);
+    setUploadErrors([]);
+    
     try {
+      console.log('📤 Starting image upload:', { imageIndex, fileName: file.name, fileSize: file.size });
+      
       const formData = new FormData();
       formData.append('file', file);
       formData.append('productId', 'temp'); // Temporary ID for new products
@@ -50,20 +55,34 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
         body: formData,
       });
       
+      console.log('📤 Upload response status:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
-        const imageUrl = result.filename;
+        console.log('📤 Upload result:', result);
         
-        const newImages = [...(formData.images || [])];
-        newImages[imageIndex] = imageUrl;
-        setFormData(prev => ({
-          ...prev,
-          images: newImages
-        }));
+        if (result.success) {
+          const imageUrl = result.filename;
+          
+          const newImages = [...(formData.images || [])];
+          newImages[imageIndex] = imageUrl;
+          setFormData(prev => ({
+            ...prev,
+            images: newImages
+          }));
+          
+          console.log('✅ Image uploaded successfully:', imageUrl);
+        } else {
+          throw new Error(result.error || 'Upload failed');
+        }
+      } else {
+        const errorResult = await response.json();
+        throw new Error(errorResult.error || `Upload failed with status ${response.status}`);
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Error uploading image');
+      console.error('❌ Error uploading image:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      setUploadErrors(prev => [...prev, `Image ${imageIndex + 1}: ${errorMessage}`]);
     } finally {
       setUploading(false);
     }
@@ -214,19 +233,37 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
                     {image ? (
                       <div className="flex items-center gap-2">
                         <ImageIcon className="h-4 w-4 text-green-600" />
-                        <span className="text-sm text-green-600 font-bold">{image}</span>
+                        <span className="text-sm text-green-600 font-bold truncate">{image}</span>
+                        <div className="w-16 h-16 bg-gray-100 rounded border overflow-hidden">
+                          <img 
+                            src={image} 
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              console.error('Image preview failed:', image);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
                       </div>
                     ) : (
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(index, file);
-                        }}
-                        className="w-full text-sm font-semibold"
-                        disabled={uploading}
-                      />
+                      <div className="space-y-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(index, file);
+                          }}
+                          className="w-full text-sm font-semibold"
+                          disabled={uploading}
+                        />
+                        {uploading && (
+                          <div className="text-sm text-blue-600 font-semibold">
+                            📤 Uploading...
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                   {(formData.images || []).length > 1 && (
@@ -241,6 +278,16 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
                   )}
                 </div>
               ))}
+              
+              {/* Show upload errors */}
+              {uploadErrors.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded p-3">
+                  <div className="text-red-600 font-semibold text-sm mb-2">Upload Errors:</div>
+                  {uploadErrors.map((error, index) => (
+                    <div key={index} className="text-red-600 text-sm">• {error}</div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Additional Settings */}

@@ -68,9 +68,10 @@ export async function POST(request: NextRequest) {
       if (supabase) {
         console.log('🔄 Attempting to upload to Supabase Storage...');
         
+        // Try to upload to the bucket (without public/ prefix)
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(`public/${filename}`, buffer, {
+          .upload(filename, buffer, {
             cacheControl: '3600',
             upsert: false,
             contentType: file.type
@@ -78,13 +79,62 @@ export async function POST(request: NextRequest) {
 
         if (uploadError) {
           console.error('Supabase upload error:', uploadError);
-          throw new Error('Supabase upload failed: ' + uploadError.message);
+          
+          // If bucket doesn't exist, try to create it
+          if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
+            console.log('🔄 Bucket not found, attempting to create it...');
+            
+            const { error: createError } = await supabase.storage
+              .createBucket('product-images', {
+                public: true,
+                allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+                fileSizeLimit: 10 * 1024 * 1024, // 10MB
+              });
+
+            if (createError) {
+              console.error('Failed to create bucket:', createError);
+              throw new Error('Supabase bucket creation failed: ' + createError.message);
+            }
+
+            // Retry upload after creating bucket
+            const { data: retryData, error: retryError } = await supabase.storage
+              .from('product-images')
+              .upload(filename, buffer, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: file.type
+              });
+
+            if (retryError) {
+              console.error('Retry upload failed:', retryError);
+              throw new Error('Supabase upload failed after bucket creation: ' + retryError.message);
+            }
+
+            // Get public URL for retry
+            const { data: urlData } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(filename);
+
+            console.log('✅ File uploaded to Supabase Storage (after bucket creation):', urlData.publicUrl);
+
+            return NextResponse.json({ 
+              success: true, 
+              filename: urlData.publicUrl,
+              originalName: file.name,
+              size: file.size,
+              type: file.type,
+              isMobile: isMobile,
+              storage: 'supabase'
+            });
+          } else {
+            throw new Error('Supabase upload failed: ' + uploadError.message);
+          }
         }
 
         // Get public URL
         const { data: urlData } = supabase.storage
           .from('product-images')
-          .getPublicUrl(`public/${filename}`);
+          .getPublicUrl(filename);
 
         console.log('✅ File uploaded to Supabase Storage:', urlData.publicUrl);
 
