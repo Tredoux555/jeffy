@@ -59,19 +59,34 @@ async function downloadImage(url, filename) {
  * Upload product via API
  */
 async function uploadProduct(productData) {
-  const response = await fetch(`${BASE_URL}/api/products/create`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(productData),
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to upload product: ${response.statusText}`);
+  try {
+    const response = await fetch(`${BASE_URL}/api/products/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to upload product: ${response.statusText} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Handle different response formats
+    if (result.success === false) {
+      throw new Error(result.error || 'Upload failed');
+    }
+    
+    return result;
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      throw new Error('Cannot connect to server. Make sure the development server is running with: npm run dev');
+    }
+    throw error;
   }
-  
-  return await response.json();
 }
 
 /**
@@ -106,11 +121,18 @@ async function uploadProductWithImages(productData, imageUrls) {
     const result = await uploadProduct(finalProductData);
     
     console.log(`✅ Product uploaded successfully!`);
-    console.log(`📋 Product ID: ${result.id}`);
-    console.log(`🖼️  Images: ${imagePaths.length} uploaded`);
-    console.log(`🔗 View at: ${BASE_URL}/products/${result.id}`);
     
-    return result;
+    // Handle different response formats
+    const productId = result.id || result.product?.id || finalProductData.id;
+    console.log(`📋 Product ID: ${productId}`);
+    console.log(`🖼️  Images: ${imagePaths.length} uploaded`);
+    console.log(`🔗 View at: ${BASE_URL}/products/${productId}`);
+    
+    if (result.message) {
+      console.log(`ℹ️  ${result.message}`);
+    }
+    
+    return { ...result, id: productId };
     
   } catch (error) {
     console.error(`❌ Error uploading product: ${error.message}`);

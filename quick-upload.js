@@ -56,11 +56,22 @@ Categories: archery, gym, camping, kitchen, beauty, electronics, sports, home-ga
   try {
     console.log(`🚀 Uploading: ${name}`);
     const result = await uploadProductWithImages(productData, imageUrls);
+    const productId = result.id || result.product?.id;
     console.log(`\n🎉 SUCCESS! Product uploaded:`);
-    console.log(`🔗 View at: http://localhost:3000/products/${result.id}`);
+    console.log(`🔗 View at: http://localhost:3000/products/${productId}`);
     console.log(`📱 Admin: http://localhost:3000/admin/dashboard`);
+    
+    if (result.message) {
+      console.log(`\nℹ️  Note: ${result.message}`);
+    }
   } catch (error) {
     console.error(`\n❌ FAILED: ${error.message}`);
+    
+    if (error.message.includes('Cannot connect to server')) {
+      console.log('\n💡 Tip: Start the development server first:');
+      console.log('   npm run dev');
+    }
+    
     process.exit(1);
   }
 }
