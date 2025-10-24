@@ -6,7 +6,6 @@ import { useCart } from "@/lib/cart";
 import { ArrowLeft, ShoppingCart, Heart, Truck, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { StarRating } from "@/components/ui/star-rating";
 import { ProductVariantSelector } from "@/components/product-variant-selector";
 import { formatCurrency } from "@/lib/currency";
@@ -157,17 +156,23 @@ export default function ProductPage() {
           <div className="space-y-4">
             <div className="aspect-square relative overflow-hidden bg-gray-100 rounded-xl">
               {hasImages && validImages[safeSelectedImage] ? (
-                <Image
+                <img
                   src={validImages[safeSelectedImage]}
                   alt={product.name}
-                  fill
-                  unoptimized
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
+                    console.error(`❌ Product detail image failed to load:`);
+                    console.error(`   - Product: ${product.name}`);
+                    console.error(`   - Image URL: ${validImages[safeSelectedImage]}`);
+                    console.error(`   - Image index: ${safeSelectedImage}`);
+                    
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                     const fallback = target.nextElementSibling as HTMLElement;
                     if (fallback) fallback.style.display = 'flex';
+                  }}
+                  onLoad={() => {
+                    console.log(`✅ Product detail image loaded: ${product.name}`);
                   }}
                 />
               ) : (
@@ -209,12 +214,14 @@ export default function ProductPage() {
                       selectedImage === index ? 'border-yellow-400' : 'border-gray-200'
                     }`}
                   >
-                    <Image
+                    <img
                       src={image}
                       alt={`${product.name} ${index + 1}`}
-                      fill
-                      unoptimized
-                      className="object-cover"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error(`❌ Thumbnail ${index + 1} failed to load`);
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
                     />
                   </button>
                 ))}
