@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup": "node setup-supabase.js",
+    "test-supabase": "node test-supabase-connection.js"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",
