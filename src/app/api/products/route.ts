@@ -32,21 +32,22 @@ export async function GET(request: NextRequest) {
         }
         
         // Transform data to match frontend expectations
+        // Handle both camelCase and snake_case formats from Supabase
         const transformedProducts = supabaseProducts?.map(product => ({
           id: product.id,
           name: product.name,
           description: product.description,
           price: product.price,
-          originalPrice: product.original_price,
+          originalPrice: product.original_price || product.originalPrice,
           category: product.category,
           images: product.images || [],
           videos: product.videos || [],
           rating: product.rating,
-          reviewCount: product.review_count,
-          inStock: product.in_stock,
+          reviewCount: product.review_count || product.reviewCount,
+          inStock: product.in_stock || product.inStock,
           display: product.display,
-          createdAt: product.created_at,
-          updatedAt: product.updated_at
+          createdAt: product.created_at || product.createdAt,
+          updatedAt: product.updated_at || product.updatedAt
         })) || [];
         
         console.log(`✅ Fetched ${transformedProducts.length} products from Supabase`);

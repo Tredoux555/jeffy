@@ -29,21 +29,22 @@ export async function GET(
           console.log('⚠️ Product not found in Supabase:', error.message);
         } else if (supabaseProduct) {
           // Transform data to match frontend expectations
+          // Handle both camelCase and snake_case formats from Supabase
           const transformedProduct = {
             id: supabaseProduct.id,
             name: supabaseProduct.name,
             description: supabaseProduct.description,
             price: supabaseProduct.price,
-            originalPrice: supabaseProduct.original_price,
+            originalPrice: supabaseProduct.original_price || supabaseProduct.originalPrice,
             category: supabaseProduct.category,
             images: supabaseProduct.images || [],
             videos: supabaseProduct.videos || [],
             rating: supabaseProduct.rating,
-            reviewCount: supabaseProduct.review_count,
-            inStock: supabaseProduct.in_stock,
+            reviewCount: supabaseProduct.review_count || supabaseProduct.reviewCount,
+            inStock: supabaseProduct.in_stock || supabaseProduct.inStock,
             display: supabaseProduct.display,
-            createdAt: supabaseProduct.created_at,
-            updatedAt: supabaseProduct.updated_at
+            createdAt: supabaseProduct.created_at || supabaseProduct.createdAt,
+            updatedAt: supabaseProduct.updated_at || supabaseProduct.updatedAt
           };
           
           console.log('✅ Found product in Supabase:', transformedProduct.name);
