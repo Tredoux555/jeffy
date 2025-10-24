@@ -25,11 +25,18 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    // Check authentication immediately
     const auth = localStorage.getItem("adminAuth");
     if (auth === "true") {
       setIsAuthenticated(true);
     } else {
-      router.push("/admin/login");
+      // Only redirect if we're sure we're not authenticated
+      setTimeout(() => {
+        const authCheck = localStorage.getItem("adminAuth");
+        if (authCheck !== "true") {
+          router.push("/admin/login");
+        }
+      }, 100);
     }
   }, [router]);
 
@@ -45,16 +52,19 @@ export default function AdminDashboard() {
           setAllProducts(updatedProducts);
         } else {
           console.error('Error loading updated products:', response.statusText);
+          // Fallback to empty array if API fails
+          setAllProducts([]);
         }
       } catch (error) {
         console.error('Error loading updated products:', error);
+        // Fallback to empty array if API fails
+        setAllProducts([]);
       }
     };
     
-    if (isAuthenticated) {
-      loadUpdatedProducts();
-    }
-  }, [isAuthenticated]);
+    // Load products immediately, don't wait for authentication
+    loadUpdatedProducts();
+  }, []);
 
   const handleToggleDisplay = async (productId: string, display: boolean) => {
     try {
