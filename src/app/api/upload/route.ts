@@ -81,27 +81,7 @@ export async function POST(request: NextRequest) {
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
 
-    // TEMPORARY FIX: Always use placeholder images for now
-    console.log('🔄 Using placeholder image approach (temporary fix)');
-    
-    const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
-    const color = colors[parseInt(imageIndex || '0') % colors.length];
-    const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
-    
-    console.log('✅ Created placeholder image:', placeholderUrl);
-    
-    return NextResponse.json({ 
-      success: true, 
-      filename: placeholderUrl,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-      isMobile: isMobile,
-      storage: 'placeholder-temp-fix',
-      message: 'Using placeholder image (Supabase upload temporarily disabled)'
-    });
-
-    // Try Supabase Storage with admin client (service role key) - DISABLED FOR NOW
+    // Try Supabase Storage with admin client (service role key)
     try {
       console.log('🔍 Checking Supabase admin client...');
       console.log('🔍 Supabase admin client exists:', !!supabaseAdmin);
@@ -249,25 +229,61 @@ export async function POST(request: NextRequest) {
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       
-      // Fallback: Create placeholder image URL
-      console.log('🔄 Creating placeholder image as fallback...');
+      // Fallback: Save to local file system
+      console.log('🔄 Saving to local file system as fallback...');
       
-      const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
-      const color = colors[parseInt(imageIndex || '0') % colors.length];
-      const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
-      
-      console.log('✅ Created placeholder image:', placeholderUrl);
-      
-      return NextResponse.json({ 
-        success: true, 
-        filename: placeholderUrl,
-        originalName: file.name,
-        size: file.size,
-        type: file.type,
-        isMobile: isMobile,
-        storage: 'placeholder-fallback',
-        warning: 'Supabase upload failed, using placeholder image'
-      });
+      try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        
+        // Create uploads directory if it doesn't exist
+        const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+        try {
+          await fs.mkdir(uploadsDir, { recursive: true });
+        } catch (err) {
+          // Directory might already exist
+        }
+        
+        // Save file to local storage
+        const filePath = path.join(uploadsDir, filename);
+        await fs.writeFile(filePath, buffer);
+        
+        const localUrl = `/uploads/${filename}`;
+        console.log('✅ Saved to local storage:', localUrl);
+        
+        return NextResponse.json({ 
+          success: true, 
+          filename: localUrl,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          isMobile: isMobile,
+          storage: 'local-fallback',
+          warning: 'Supabase upload failed, using local storage'
+        });
+      } catch (localError) {
+        console.error('❌ Local storage also failed:', localError);
+        
+        // Final fallback: Create placeholder image URL
+        console.log('🔄 Creating placeholder image as final fallback...');
+        
+        const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
+        const color = colors[parseInt(imageIndex || '0') % colors.length];
+        const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
+        
+        console.log('✅ Created placeholder image:', placeholderUrl);
+        
+        return NextResponse.json({ 
+          success: true, 
+          filename: placeholderUrl,
+          originalName: file.name,
+          size: file.size,
+          type: file.type,
+          isMobile: isMobile,
+          storage: 'placeholder-fallback',
+          warning: 'All storage methods failed, using placeholder image'
+        });
+      }
     }
   } catch (error) {
     console.error('❌ Error uploading file:', error);

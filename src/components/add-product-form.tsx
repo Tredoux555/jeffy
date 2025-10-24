@@ -88,6 +88,11 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
           }));
           
           console.log('✅ Image uploaded successfully:', imageUrl);
+          console.log('📦 Upload details:', {
+            storage: result.storage,
+            warning: result.warning,
+            message: result.message
+          });
         } else {
           throw new Error(result.error || 'Upload failed');
         }
@@ -151,8 +156,10 @@ export function AddProductForm({ category, onProductAdded, onCancel }: AddProduc
       
       if (response.ok && result.success) {
         onProductAdded(result.product);
-        alert('Product created successfully!');
+        alert(`Product created successfully! ${result.message ? `(${result.message})` : ''}`);
+        console.log('✅ Product created:', result.product);
       } else {
+        console.error('❌ Product creation failed:', result);
         alert(`Error creating product: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {

@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
-    // Try Supabase first, fallback to memory storage
+    // Try Supabase first, fallback to file storage
     try {
       // Check if Supabase is properly configured and available
       if (supabaseAdmin) {
@@ -58,12 +58,31 @@ export async function POST(request: NextRequest) {
         console.log('📊 Created product data:', data);
         console.log('🔍 Product category:', data?.category);
         console.log('👁️ Product display:', data?.display);
+        
+        // Transform the data to match frontend expectations
+        const transformedProduct = {
+          id: data.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          originalPrice: data.original_price,
+          category: data.category,
+          images: data.images || [],
+          videos: data.videos || [],
+          rating: data.rating,
+          reviewCount: data.review_count,
+          inStock: data.in_stock,
+          display: data.display,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        };
+        
         return NextResponse.json({ 
           success: true, 
-          product: data 
+          product: transformedProduct 
         });
       } else {
-        throw new Error('Supabase not configured');
+        throw new Error('Supabase not configured - check environment variables');
       }
     } catch (supabaseError) {
       console.log('⚠️ Supabase not available, using file storage:', supabaseError);
@@ -77,7 +96,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ 
           success: true, 
           product: savedProduct,
-          message: 'Product created successfully (stored in file system)'
+          message: 'Product created successfully (stored in file system)',
+          warning: 'Supabase not configured - using file storage fallback'
         });
       } catch (fileError) {
         console.error('❌ File storage failed:', fileError);
