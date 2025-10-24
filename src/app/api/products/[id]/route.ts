@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductByIdWithUpdates } from '@/data/products-server';
 import { getProductById } from '@/data/products';
-import fs from 'fs/promises';
-import path from 'path';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
@@ -49,42 +48,29 @@ export async function PUT(
 
     const updatedProduct = await request.json();
     
-    // Read current products
-    const filePath = path.join(process.cwd(), 'data', 'updated-products.json');
-    let products: any = {};
-    
-    try {
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      // Handle empty file or invalid JSON
-      if (fileContent.trim() === '') {
-        products = {};
-      } else {
-        products = JSON.parse(fileContent);
-      }
-    } catch (error) {
-      console.error('Error reading products file:', error);
-      // If JSON parsing fails, initialize as empty object
-      products = {};
+    // Use Supabase instead of file system
+    if (!supabaseAdmin) {
+      return NextResponse.json({ 
+        error: 'Supabase not configured' 
+      }, { status: 500 });
     }
 
-    // Check if product exists in updated products, if not get from original products
-    if (!products[productId]) {
-      // Try to get the original product first
-      const originalProduct = getProductById(productId);
-      if (!originalProduct) {
-        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-      }
-      // Initialize with original product data
-      products[productId] = originalProduct;
+    // Update product in Supabase
+    const { data: result, error } = await supabaseAdmin
+      .from('products')
+      .update(updatedProduct)
+      .eq('id', productId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase update error:', error);
+      return NextResponse.json({ 
+        error: 'Database update failed: ' + error.message 
+      }, { status: 500 });
     }
 
-    // Update the product
-    products[productId] = { ...products[productId], ...updatedProduct };
-
-    // Save updated products
-    await fs.writeFile(filePath, JSON.stringify(products, null, 2));
-
-    return NextResponse.json(products[productId]);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error updating product:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -102,42 +88,27 @@ export async function DELETE(
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    // Read current products
-    const filePath = path.join(process.cwd(), 'data', 'updated-products.json');
-    let products: any = {};
-    
-    try {
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      // Handle empty file or invalid JSON
-      if (fileContent.trim() === '') {
-        products = {};
-      } else {
-        products = JSON.parse(fileContent);
-      }
-    } catch (error) {
-      console.error('Error reading products file:', error);
-      // If JSON parsing fails, initialize as empty object
-      products = {};
+    // Use Supabase instead of file system
+    if (!supabaseAdmin) {
+      return NextResponse.json({ 
+        error: 'Supabase not configured' 
+      }, { status: 500 });
     }
 
-    // Check if product exists in updated products, if not get from original products
-    if (!products[productId]) {
-      // Try to get the original product first
-      const originalProduct = getProductById(productId);
-      if (!originalProduct) {
-        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-      }
-      // Initialize with original product data
-      products[productId] = originalProduct;
+    // Delete product from Supabase
+    const { error } = await supabaseAdmin
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (error) {
+      console.error('Supabase delete error:', error);
+      return NextResponse.json({ 
+        error: 'Database delete failed: ' + error.message 
+      }, { status: 500 });
     }
 
-    const deletedProduct = products[productId];
-    delete products[productId];
-
-    // Save updated products
-    await fs.writeFile(filePath, JSON.stringify(products, null, 2));
-
-    return NextResponse.json({ message: 'Product deleted successfully', product: deletedProduct });
+    return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
