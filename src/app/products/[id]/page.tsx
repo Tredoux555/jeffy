@@ -61,29 +61,17 @@ export default function ProductPage() {
   };
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const loadProduct = () => {
       if (params.id) {
-        try {
-          const response = await fetch(`/api/products/${params.id}`);
-          if (response.ok) {
-            const foundProduct = await response.json();
-            setProduct(foundProduct);
-          } else {
-            console.error('Error loading product:', response.statusText);
-            // Fallback to original function
-            const foundProduct = getProductById(params.id as string);
-          setProduct(foundProduct);
-          }
-        } catch (error) {
-          console.error('Error loading product:', error);
-          // Fallback to original function
-          const foundProduct = getProductById(params.id as string);
+        // Use static data directly - this was working before
+        const foundProduct = getProductById(params.id as string);
+        if (foundProduct) {
           setProduct(foundProduct);
         }
-        setLoading(false);
       }
+      setLoading(false);
     };
-    
+
     loadProduct();
   }, [params.id]);
 

@@ -68,31 +68,10 @@ function ProductsPageContent() {
 
   // Load products from API after component mounts
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        console.log('🔄 Loading products from API...');
-        const response = await fetch('/api/products', {
-          cache: 'no-store', // Changed from force-cache to no-store to get fresh data
-          next: { revalidate: 0 } // Changed from 300 to 0 for immediate updates
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Loaded', data.length, 'products from API');
-          setAllProducts(data);
-        } else {
-          console.error('❌ Failed to load products:', response.status);
-          // Keep using static products if API fails
-        }
-      } catch (err) {
-        console.error('❌ Error loading products:', err);
-        // Keep using static products if API fails
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProducts();
+    // Just use static products for now - this was working before
+    console.log('✅ Using static products:', products.length);
+    setAllProducts(products);
+    setIsLoading(false);
   }, []); // Keep empty dependency array for initial load
 
   // Add a focus listener to refresh products when page becomes visible
