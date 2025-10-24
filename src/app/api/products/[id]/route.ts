@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductById } from '@/data/products';
-import { loadProducts } from '@/lib/file-storage';
+import { getProductByIdWithUpdates } from '@/data/products-server';
 
 export async function GET(
   request: NextRequest,
@@ -15,18 +15,16 @@ export async function GET(
 
     console.log('🔍 Looking for product:', productId);
 
-    // Try to get product from file storage first
+    // Try to get product with updates first (from updated-products.json)
     let product;
     try {
-      const dynamicProducts = await loadProducts();
-      product = dynamicProducts.find(p => p.id === productId);
-      
+      product = await getProductByIdWithUpdates(productId);
       if (product) {
-        console.log('✅ Found product in file storage:', product.name);
+        console.log('✅ Found product in updated products:', product.name);
         return NextResponse.json(product);
       }
     } catch (error) {
-      console.log('⚠️ File storage failed, trying static products:', error);
+      console.log('⚠️ Updated products failed, trying static products:', error);
     }
 
     // Fallback to static products

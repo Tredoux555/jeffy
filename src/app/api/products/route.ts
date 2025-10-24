@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { products } from '@/data/products';
-import { loadProducts } from '@/lib/file-storage';
+import { getProductByIdWithUpdates } from '@/data/products-server';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const includeHidden = searchParams.get('includeHidden') === 'true';
     
-    // Try Supabase first, fallback to static products
+    // Try Supabase first, fallback to existing system
     try {
       // Check if Supabase is properly configured and available
       if (supabase) {
@@ -56,29 +56,47 @@ export async function GET(request: NextRequest) {
         throw new Error('Supabase not configured');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase not available, using file storage + static products:', supabaseError);
+      console.log('⚠️ Supabase not available, using existing system:', supabaseError);
       
-      // Fallback: Load from file storage + static products
+      // Fallback: Use existing system (static + updated products)
       try {
-        const dynamicProducts = await loadProducts();
-        let allProducts = [...dynamicProducts, ...products];
+        // Get all static products
+        let allProducts = [...products];
         
-        // Remove duplicates based on ID
-        const uniqueProducts = allProducts.filter((product, index, self) => 
-          index === self.findIndex(p => p.id === product.id)
-        );
+        // Try to get updated products and merge them
+        try {
+          // This will get products from updated-products.json
+          const updatedProductIds = ['6', '8', '1760786854717', '1760884221093', '1760884681360']; // Known updated product IDs
+          
+          for (const productId of updatedProductIds) {
+            try {
+              const updatedProduct = await getProductByIdWithUpdates(productId);
+              if (updatedProduct) {
+                // Replace static product with updated version
+                const staticIndex = allProducts.findIndex(p => p.id === productId);
+                if (staticIndex !== -1) {
+                  allProducts[staticIndex] = updatedProduct;
+                } else {
+                  allProducts.push(updatedProduct);
+                }
+              }
+            } catch (error) {
+              console.log(`Could not load updated product ${productId}:`, error);
+            }
+          }
+        } catch (error) {
+          console.log('Could not load updated products:', error);
+        }
         
         // Filter products based on display status unless includeHidden is true
         if (!includeHidden) {
-          allProducts = uniqueProducts.filter(product => product.display !== false);
-        } else {
-          allProducts = uniqueProducts;
+          allProducts = allProducts.filter(product => product.display !== false);
         }
         
-        console.log(`✅ Fetched ${allProducts.length} products (${dynamicProducts.length} dynamic + ${products.length} static)`);
+        console.log(`✅ Fetched ${allProducts.length} products (static + updated)`);
         return NextResponse.json(allProducts);
-      } catch (fileError) {
-        console.log('⚠️ File storage failed, using static products only:', fileError);
+      } catch (error) {
+        console.log('⚠️ Existing system failed, using static products only:', error);
         
         // Final fallback: Use static products only
         let allProducts = products;
