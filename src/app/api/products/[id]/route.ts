@@ -14,21 +14,66 @@ export async function GET(
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    // Try to get product with updates first
-    let product;
+    console.log('🔍 Looking for product:', productId);
+
+    // Try Supabase first (where new products are stored)
+    if (supabaseAdmin) {
+      try {
+        const { data: supabaseProduct, error } = await supabaseAdmin
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) {
+          console.log('⚠️ Product not found in Supabase:', error.message);
+        } else if (supabaseProduct) {
+          // Transform data to match frontend expectations
+          const transformedProduct = {
+            id: supabaseProduct.id,
+            name: supabaseProduct.name,
+            description: supabaseProduct.description,
+            price: supabaseProduct.price,
+            originalPrice: supabaseProduct.original_price,
+            category: supabaseProduct.category,
+            images: supabaseProduct.images || [],
+            videos: supabaseProduct.videos || [],
+            rating: supabaseProduct.rating,
+            reviewCount: supabaseProduct.review_count,
+            inStock: supabaseProduct.in_stock,
+            display: supabaseProduct.display,
+            createdAt: supabaseProduct.created_at,
+            updatedAt: supabaseProduct.updated_at
+          };
+          
+          console.log('✅ Found product in Supabase:', transformedProduct.name);
+          return NextResponse.json(transformedProduct);
+        }
+      } catch (supabaseError) {
+        console.log('⚠️ Supabase error:', supabaseError);
+      }
+    }
+
+    // Fallback: Try static products
     try {
-      product = await getProductByIdWithUpdates(productId);
+      const product = await getProductByIdWithUpdates(productId);
+      if (product) {
+        console.log('✅ Found product in updated products:', product.name);
+        return NextResponse.json(product);
+      }
     } catch (error) {
-      console.error('Error loading product with updates:', error);
-      // Fallback to original function
-      product = getProductById(productId);
+      console.log('⚠️ Updated products failed, trying static products');
     }
 
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    // Final fallback: Static products
+    const product = getProductById(productId);
+    if (product) {
+      console.log('✅ Found product in static data:', product.name);
+      return NextResponse.json(product);
     }
 
-    return NextResponse.json(product);
+    console.log('❌ Product not found anywhere:', productId);
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 });
   } catch (error) {
     console.error('Error in products API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
