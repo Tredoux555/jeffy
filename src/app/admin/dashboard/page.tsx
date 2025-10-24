@@ -393,6 +393,13 @@ export default function AdminDashboard() {
               <Plus className="mr-2 h-4 w-4" />
               New Product
             </Button>
+            <Button
+              onClick={() => setSelectedCategory("all")}
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Show All Products
+            </Button>
           <Button
             onClick={handleLogout}
             variant="outline"

@@ -37,16 +37,21 @@ export default function AdminProductPage({ params }: { params: Promise<{ id: str
   useEffect(() => {
     const loadProduct = async () => {
       try {
+        console.log('🔍 Admin loading product with ID:', resolvedParams.id);
         const response = await fetch(`/api/products/${resolvedParams.id}`);
+        console.log('🔍 Admin API response status:', response.status);
+        
         if (response.ok) {
           const productData = await response.json();
+          console.log('✅ Admin loaded product:', productData);
           setProduct(productData);
           setEditingProduct(productData);
         } else {
-          console.error('Error loading product:', response.statusText);
+          const errorText = await response.text();
+          console.error('❌ Admin error loading product:', response.status, errorText);
         }
       } catch (error) {
-        console.error('Error loading product:', error);
+        console.error('❌ Admin error loading product:', error);
       } finally {
         setLoading(false);
       }
