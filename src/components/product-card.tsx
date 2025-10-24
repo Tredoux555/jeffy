@@ -85,16 +85,19 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <Link href={`/products/${product.id}`}>
           <div className="aspect-square relative overflow-hidden bg-gray-100">
             {mainImage ? (
-              <img
+              <Image
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
+                fill
+                unoptimized
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   console.error('❌ Image failed to load:', mainImage);
                   console.error('Image element:', e.currentTarget);
                   // Hide the broken image and show fallback
                   e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
                 }}
                 onLoad={() => {
                   console.log('✅ Image loaded successfully:', mainImage);

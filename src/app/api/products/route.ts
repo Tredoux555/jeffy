@@ -57,15 +57,55 @@ export async function GET(request: NextRequest) {
     } catch (supabaseError) {
       console.log('⚠️ Supabase not available, using static products:', supabaseError);
       
-      // Fallback: Use static products
-      let allProducts = products;
+      // Fallback: Use static products + any uploaded products from memory
+      let allProducts = [...products];
+      
+      // Try to load additional products from updated-products.json if it exists
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const updatedProductsPath = path.join(process.cwd(), 'data', 'updated-products.json');
+        
+        if (fs.existsSync(updatedProductsPath)) {
+          const updatedProductsData = JSON.parse(fs.readFileSync(updatedProductsPath, 'utf8'));
+          const additionalProducts = Object.values(updatedProductsData).map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            originalPrice: product.originalPrice,
+            category: product.category,
+            images: product.images || [],
+            videos: product.videos || [],
+            rating: product.rating || 0,
+            reviewCount: product.reviewCount || 0,
+            inStock: product.inStock !== false,
+            display: product.display !== false,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
+            variants: product.variants || [],
+            features: product.features || [],
+            specifications: product.specifications || {},
+            tags: product.tags || []
+          }));
+          
+          // Merge additional products, avoiding duplicates
+          const existingIds = new Set(allProducts.map(p => p.id));
+          const newProducts = additionalProducts.filter(p => !existingIds.has(p.id));
+          allProducts = [...allProducts, ...newProducts];
+          
+          console.log(`✅ Loaded ${additionalProducts.length} additional products from updated-products.json`);
+        }
+      } catch (fileError) {
+        console.log('⚠️ Could not load updated-products.json:', fileError);
+      }
       
       // Filter products based on display status unless includeHidden is true
       if (!includeHidden) {
         allProducts = allProducts.filter(product => product.display !== false);
       }
       
-      console.log(`✅ Fetched ${allProducts.length} static products`);
+      console.log(`✅ Fetched ${allProducts.length} total products (static + uploaded)`);
       return NextResponse.json(allProducts);
     }
   } catch (error) {
