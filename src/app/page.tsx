@@ -72,8 +72,8 @@ function ProductsPageContent() {
       try {
         console.log('🔄 Loading products from API...');
         const response = await fetch('/api/products', {
-          cache: 'force-cache', // Add caching
-          next: { revalidate: 300 } // Revalidate every 5 minutes
+          cache: 'no-store', // Changed from force-cache to no-store to get fresh data
+          next: { revalidate: 0 } // Changed from 300 to 0 for immediate updates
         });
         
         if (response.ok) {
@@ -93,6 +93,19 @@ function ProductsPageContent() {
     };
 
     loadProducts();
+  }, []); // Keep empty dependency array for initial load
+
+  // Add a focus listener to refresh products when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page became visible, refreshing products...');
+        refreshProducts();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // Listen for updates
