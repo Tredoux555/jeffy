@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { products } from '@/data/products';
+import { loadProducts } from '@/lib/file-storage';
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,18 +56,41 @@ export async function GET(request: NextRequest) {
         throw new Error('Supabase not configured');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase not available, using static products:', supabaseError);
+      console.log('⚠️ Supabase not available, using file storage + static products:', supabaseError);
       
-      // Fallback: Use static products
-      let allProducts = products;
-      
-      // Filter products based on display status unless includeHidden is true
-      if (!includeHidden) {
-        allProducts = allProducts.filter(product => product.display !== false);
+      // Fallback: Load from file storage + static products
+      try {
+        const dynamicProducts = await loadProducts();
+        let allProducts = [...dynamicProducts, ...products];
+        
+        // Remove duplicates based on ID
+        const uniqueProducts = allProducts.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        // Filter products based on display status unless includeHidden is true
+        if (!includeHidden) {
+          allProducts = uniqueProducts.filter(product => product.display !== false);
+        } else {
+          allProducts = uniqueProducts;
+        }
+        
+        console.log(`✅ Fetched ${allProducts.length} products (${dynamicProducts.length} dynamic + ${products.length} static)`);
+        return NextResponse.json(allProducts);
+      } catch (fileError) {
+        console.log('⚠️ File storage failed, using static products only:', fileError);
+        
+        // Final fallback: Use static products only
+        let allProducts = products;
+        
+        // Filter products based on display status unless includeHidden is true
+        if (!includeHidden) {
+          allProducts = allProducts.filter(product => product.display !== false);
+        }
+        
+        console.log(`✅ Fetched ${allProducts.length} static products only`);
+        return NextResponse.json(allProducts);
       }
-      
-      console.log(`✅ Fetched ${allProducts.length} static products`);
-      return NextResponse.json(allProducts);
     }
   } catch (error) {
     console.error('Error in products API:', error);

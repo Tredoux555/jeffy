@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { saveProduct } from '@/lib/file-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,17 +66,26 @@ export async function POST(request: NextRequest) {
         throw new Error('Supabase not configured');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase not available, using memory storage:', supabaseError);
+      console.log('⚠️ Supabase not available, using file storage:', supabaseError);
       
-      // Fallback: Store in memory and return success
-      console.log('✅ New product created (memory storage):', productId, productData.name);
-      console.log('📦 Product data:', JSON.stringify(productData, null, 2));
-      
-      return NextResponse.json({ 
-        success: true, 
-        product: productData,
-        message: 'Product created successfully (stored in memory - set up Supabase for permanent storage)'
-      });
+      // Fallback: Store in file system
+      try {
+        const savedProduct = await saveProduct(productData);
+        console.log('✅ New product created (file storage):', productId, productData.name);
+        console.log('📦 Product data:', JSON.stringify(productData, null, 2));
+        
+        return NextResponse.json({ 
+          success: true, 
+          product: savedProduct,
+          message: 'Product created successfully (stored in file system)'
+        });
+      } catch (fileError) {
+        console.error('❌ File storage failed:', fileError);
+        return NextResponse.json({ 
+          success: false,
+          error: 'Failed to save product: ' + (fileError as Error).message
+        }, { status: 500 });
+      }
     }
   } catch (error) {
     console.error('Error creating product:', error);
