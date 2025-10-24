@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { StarRating } from '@/components/ui/star-rating';
 import { ShoppingCart, Heart, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { formatCurrency } from '@/lib/currency';
 import { useState, useEffect, useRef } from 'react';
 import { useFavorites } from '@/lib/favorites';
@@ -46,13 +45,27 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     ? product.images[0] 
     : null;
 
-  // Debug logging
-  console.log('ProductCard:', product.name, 'images:', product.images, 'mainImage:', mainImage);
-  
-  // Additional debugging
-  if (mainImage) {
-    console.log('🖼️ Attempting to load image:', mainImage);
-  }
+  // Debug logging for troubleshooting
+  useEffect(() => {
+    if (mainImage) {
+      console.log(`🖼️  ProductCard [${product.name}]:`);
+      console.log(`   - Image URL: ${mainImage}`);
+      console.log(`   - URL length: ${mainImage.length} chars`);
+      console.log(`   - Starts with: ${mainImage.substring(0, 50)}...`);
+      
+      // Check if it's a Supabase URL
+      if (mainImage.includes('supabase.co')) {
+        console.log(`   - Type: Supabase Storage URL`);
+      } else if (mainImage.startsWith('http')) {
+        console.log(`   - Type: External URL`);
+      } else if (mainImage.startsWith('/')) {
+        console.log(`   - Type: Local file path`);
+      }
+    } else {
+      console.warn(`⚠️  ProductCard [${product.name}]: No valid image found`);
+      console.warn(`   - Images array:`, product.images);
+    }
+  }, [product.id, mainImage, product.name, product.images]);
 
   const handleAddToCart = () => {
     if (product.variants && product.variants.length > 0) {
@@ -91,13 +104,20 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
                 onError={(e) => {
-                  console.error('❌ Image failed to load:', mainImage);
-                  console.error('Image element:', e.currentTarget);
+                  console.error(`❌ Image failed to load for ${product.name}`);
+                  console.error(`   - URL: ${mainImage}`);
+                  console.error(`   - Error:`, e.currentTarget.error);
+                  
+                  // Check if it's a CORS or network error
+                  fetch(mainImage, { method: 'HEAD', mode: 'no-cors' })
+                    .then(() => console.log(`   - Image exists but may have CORS/permission issues`))
+                    .catch(() => console.error(`   - Image does not exist or network error`));
+                  
                   // Hide the broken image and show fallback
                   e.currentTarget.style.display = 'none';
                 }}
                 onLoad={() => {
-                  console.log('✅ Image loaded successfully:', mainImage);
+                  console.log(`✅ Image loaded successfully for ${product.name}`);
                 }}
               />
             ) : null}
