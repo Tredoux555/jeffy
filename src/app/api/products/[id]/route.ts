@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProductByIdWithUpdates } from '@/data/products-server';
 import { getProductById } from '@/data/products';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
@@ -17,9 +17,10 @@ export async function GET(
     console.log('🔍 Looking for product:', productId);
 
     // Try Supabase first (where new products are stored)
-    if (supabaseAdmin) {
+    // Use regular supabase client first (same as main products API)
+    if (supabase) {
       try {
-        const { data: supabaseProduct, error } = await supabaseAdmin
+        const { data: supabaseProduct, error } = await supabase
           .from('products')
           .select('*')
           .eq('id', productId)
@@ -52,6 +53,45 @@ export async function GET(
         }
       } catch (supabaseError) {
         console.log('⚠️ Supabase error:', supabaseError);
+      }
+    }
+
+    // Try supabaseAdmin as fallback
+    if (supabaseAdmin) {
+      try {
+        const { data: supabaseProduct, error } = await supabaseAdmin
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) {
+          console.log('⚠️ Product not found in Supabase Admin:', error.message);
+        } else if (supabaseProduct) {
+          // Transform data to match frontend expectations
+          // Handle both camelCase and snake_case formats from Supabase
+          const transformedProduct = {
+            id: supabaseProduct.id,
+            name: supabaseProduct.name,
+            description: supabaseProduct.description,
+            price: supabaseProduct.price,
+            originalPrice: supabaseProduct.original_price || supabaseProduct.originalPrice,
+            category: supabaseProduct.category,
+            images: supabaseProduct.images || [],
+            videos: supabaseProduct.videos || [],
+            rating: supabaseProduct.rating,
+            reviewCount: supabaseProduct.review_count || supabaseProduct.reviewCount,
+            inStock: supabaseProduct.in_stock || supabaseProduct.inStock,
+            display: supabaseProduct.display,
+            createdAt: supabaseProduct.created_at || supabaseProduct.createdAt,
+            updatedAt: supabaseProduct.updated_at || supabaseProduct.updatedAt
+          };
+          
+          console.log('✅ Found product in Supabase Admin:', transformedProduct.name);
+          return NextResponse.json(transformedProduct);
+        }
+      } catch (supabaseAdminError) {
+        console.log('⚠️ Supabase Admin error:', supabaseAdminError);
       }
     }
 
