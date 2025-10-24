@@ -10,9 +10,7 @@ import Image from "next/image";
 import { StarRating } from "@/components/ui/star-rating";
 import { ProductVariantSelector } from "@/components/product-variant-selector";
 import { formatCurrency } from "@/lib/currency";
-import { useParams } from "next/navigation";
-
-export default function ProductPage() {
+export default function ProductPage({ params }: { params: { id: string } }) {
   const { addItem } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -23,7 +21,6 @@ export default function ProductPage() {
     price: 0,
     originalPrice: undefined
   });
-  const params = useParams();
 
   // Helper function to filter valid images
   const getValidImages = (images: string[]) => {
@@ -71,13 +68,13 @@ export default function ProductPage() {
           } else {
             console.error('Error loading product:', response.statusText);
             // Fallback to original function
-            const foundProduct = getProductById(params.id as string);
-          setProduct(foundProduct);
+            const foundProduct = getProductById(params.id);
+            setProduct(foundProduct);
           }
         } catch (error) {
           console.error('Error loading product:', error);
           // Fallback to original function
-          const foundProduct = getProductById(params.id as string);
+          const foundProduct = getProductById(params.id);
           setProduct(foundProduct);
         }
         setLoading(false);
