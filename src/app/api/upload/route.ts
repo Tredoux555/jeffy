@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
@@ -88,122 +86,119 @@ export async function POST(request: NextRequest) {
         isMobile
       });
         
-        // Set a timeout for the upload operation (longer for mobile)
-        const timeoutDuration = isMobile ? 60000 : 30000; // 60s mobile, 30s desktop
-        
-        const uploadPromise = supabaseAdmin.storage
-          .from('product-images')
-          .upload(filename, buffer, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: file.type
-          });
-
-        // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error(`Upload timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
-        );
-
-        const { data: uploadData, error: uploadError } = await Promise.race([
-          uploadPromise,
-          timeoutPromise
-        ]) as any;
-
-        if (uploadError) {
-          console.error('Supabase upload error:', uploadError);
-          
-          // If bucket doesn't exist, try to create it quickly
-          if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
-            console.log('🔄 Bucket not found, creating it with admin client...');
-            
-            const createPromise = supabaseAdmin.storage
-              .createBucket('product-images', {
-                public: true,
-                allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-                fileSizeLimit: 10 * 1024 * 1024, // 10MB
-              });
-
-            const createTimeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Bucket creation timeout')), 15000)
-            );
-
-            const { error: createError } = await Promise.race([
-              createPromise,
-              createTimeoutPromise
-            ]) as any;
-
-            if (createError) {
-              console.error('Failed to create bucket:', createError);
-              throw new Error('Supabase bucket creation failed: ' + createError.message);
-            }
-            
-            console.log('✅ Bucket created, retrying upload...');
-            
-            // Retry upload with timeout
-            const retryPromise = supabaseAdmin.storage
-              .from('product-images')
-              .upload(filename, buffer, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: file.type
-              });
-
-            const retryTimeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Retry upload timeout')), 30000)
-            );
-
-            const { data: retryData, error: retryError } = await Promise.race([
-              retryPromise,
-              retryTimeoutPromise
-            ]) as any;
-
-            if (retryError) {
-              console.error('Retry upload failed:', retryError);
-              throw new Error('Supabase upload failed after bucket creation: ' + retryError.message);
-            }
-
-            // Get public URL for retry
-            const { data: urlData } = supabaseAdmin.storage
-              .from('product-images')
-              .getPublicUrl(filename);
-
-            console.log('✅ File uploaded to Supabase Storage (after bucket creation):', urlData.publicUrl);
-
-            return NextResponse.json({ 
-              success: true, 
-              filename: urlData.publicUrl,
-              originalName: file.name,
-              size: file.size,
-              type: file.type,
-              isMobile: isMobile,
-              storage: 'supabase-admin'
-            });
-          } else {
-            throw new Error('Supabase upload failed: ' + uploadError.message);
-          }
-        }
-
-        // Get public URL
-        const { data: urlData } = supabaseAdmin.storage
-          .from('product-images')
-          .getPublicUrl(filename);
-
-        console.log('✅ File uploaded to Supabase Storage:', urlData.publicUrl);
-        console.log('🔍 Upload data:', uploadData);
-        console.log('🔍 URL data:', urlData);
-
-        return NextResponse.json({ 
-          success: true, 
-          filename: urlData.publicUrl,
-          originalName: file.name,
-          size: file.size,
-          type: file.type,
-          isMobile: isMobile,
-          storage: 'supabase-admin'
+      // Set a timeout for the upload operation (longer for mobile)
+      const timeoutDuration = isMobile ? 60000 : 30000; // 60s mobile, 30s desktop
+      
+      const uploadPromise = supabaseAdmin.storage
+        .from('product-images')
+        .upload(filename, buffer, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type
         });
-      } else {
-        throw new Error('Supabase admin client not configured');
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Upload timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
+      );
+
+      const { data: uploadData, error: uploadError } = await Promise.race([
+        uploadPromise,
+        timeoutPromise
+      ]) as any;
+
+      if (uploadError) {
+        console.error('Supabase upload error:', uploadError);
+        
+        // If bucket doesn't exist, try to create it quickly
+        if (uploadError.message.includes('not found') || uploadError.message.includes('does not exist')) {
+          console.log('🔄 Bucket not found, creating it with admin client...');
+          
+          const createPromise = supabaseAdmin.storage
+            .createBucket('product-images', {
+              public: true,
+              allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+              fileSizeLimit: 10 * 1024 * 1024, // 10MB
+            });
+
+          const createTimeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Bucket creation timeout')), 15000)
+          );
+
+          const { error: createError } = await Promise.race([
+            createPromise,
+            createTimeoutPromise
+          ]) as any;
+
+          if (createError) {
+            console.error('Failed to create bucket:', createError);
+            throw new Error('Supabase bucket creation failed: ' + createError.message);
+          }
+          
+          console.log('✅ Bucket created, retrying upload...');
+          
+          // Retry upload with timeout
+          const retryPromise = supabaseAdmin.storage
+            .from('product-images')
+            .upload(filename, buffer, {
+              cacheControl: '3600',
+              upsert: false,
+              contentType: file.type
+            });
+
+          const retryTimeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Retry upload timeout')), 30000)
+          );
+
+          const { data: retryData, error: retryError } = await Promise.race([
+            retryPromise,
+            retryTimeoutPromise
+          ]) as any;
+
+          if (retryError) {
+            console.error('Retry upload failed:', retryError);
+            throw new Error('Supabase upload failed after bucket creation: ' + retryError.message);
+          }
+
+          // Get public URL for retry
+          const { data: urlData } = supabaseAdmin.storage
+            .from('product-images')
+            .getPublicUrl(filename);
+
+          console.log('✅ File uploaded to Supabase Storage (after bucket creation):', urlData.publicUrl);
+
+          return NextResponse.json({ 
+            success: true, 
+            filename: urlData.publicUrl,
+            originalName: file.name,
+            size: file.size,
+            type: file.type,
+            isMobile: isMobile,
+            storage: 'supabase-admin'
+          });
+        } else {
+          throw new Error('Supabase upload failed: ' + uploadError.message);
+        }
       }
+
+      // Get public URL
+      const { data: urlData } = supabaseAdmin.storage
+        .from('product-images')
+        .getPublicUrl(filename);
+
+      console.log('✅ File uploaded to Supabase Storage:', urlData.publicUrl);
+      console.log('🔍 Upload data:', uploadData);
+      console.log('🔍 URL data:', urlData);
+
+      return NextResponse.json({ 
+        success: true, 
+        filename: urlData.publicUrl,
+        originalName: file.name,
+        size: file.size,
+        type: file.type,
+        isMobile: isMobile,
+        storage: 'supabase-admin'
+      });
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       
