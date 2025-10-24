@@ -22,15 +22,50 @@ export default function AdminLogin() {
 
     console.log('🔐 Login attempt:', { username, password });
 
-    // Simple authentication - in production, use proper auth
-    if (username === "admin" && password === "jeffy2024") {
-      console.log('✅ Login successful, setting auth and redirecting');
-      localStorage.setItem("adminAuth", "true");
-      router.push("/admin/dashboard");
-    } else {
-      console.log('❌ Login failed: Invalid credentials');
-      setError("Invalid credentials. Use admin / jeffy2024");
+    try {
+      // Use the existing auth API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: username === 'admin' ? 'admin@jeffy.co.za' : username, 
+          password 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log('✅ Login successful, setting auth and redirecting');
+        localStorage.setItem("adminAuth", "true");
+        localStorage.setItem("auth-token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        router.push("/admin/dashboard");
+      } else {
+        // Fallback to simple auth for admin
+        if (username === "admin" && password === "jeffy2024") {
+          console.log('✅ Admin login successful (fallback)');
+          localStorage.setItem("adminAuth", "true");
+          router.push("/admin/dashboard");
+        } else {
+          console.log('❌ Login failed: Invalid credentials');
+          setError("Invalid credentials. Use admin / jeffy2024");
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Fallback to simple auth for admin
+      if (username === "admin" && password === "jeffy2024") {
+        console.log('✅ Admin login successful (fallback)');
+        localStorage.setItem("adminAuth", "true");
+        router.push("/admin/dashboard");
+      } else {
+        setError("Login failed. Use admin / jeffy2024");
+      }
     }
+    
     setLoading(false);
   };
 

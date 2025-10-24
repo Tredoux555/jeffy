@@ -16,5 +16,23 @@
     },
     "addresses": [],
     "orders": []
+  },
+  {
+    "id": "admin_jeffy_2024",
+    "firstName": "Admin",
+    "lastName": "User",
+    "email": "admin@jeffy.co.za",
+    "phone": "0000000000",
+    "password": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J4Qz8Qz2O",
+    "role": "admin",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "isActive": true,
+    "preferences": {
+      "newsletter": false,
+      "notifications": true
+    },
+    "addresses": [],
+    "orders": []
   }
 ]

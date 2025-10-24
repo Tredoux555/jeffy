@@ -25,12 +25,27 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const auth = localStorage.getItem("adminAuth");
-    if (auth === "true") {
-      setIsAuthenticated(true);
-    } else {
+    const checkAuth = () => {
+      const adminAuth = localStorage.getItem("adminAuth");
+      const authToken = localStorage.getItem("auth-token");
+      const user = localStorage.getItem("user");
+      
+      if (adminAuth === "true" || (authToken && user)) {
+        try {
+          const userData = JSON.parse(user || '{}');
+          if (userData.role === 'admin' || adminAuth === "true") {
+            setIsAuthenticated(true);
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+      
       router.push("/admin/login");
-    }
+    };
+
+    checkAuth();
   }, [router]);
 
   // Load updated products on component mount
@@ -394,11 +409,28 @@ export default function AdminDashboard() {
               New Product
             </Button>
             <Button
-              onClick={() => setSelectedCategory("all")}
+              onClick={() => {
+                setSelectedCategory("all");
+                // Refresh products
+                const loadUpdatedProducts = async () => {
+                  try {
+                    console.log('Refreshing products...');
+                    const response = await fetch('/api/products?includeHidden=true');
+                    if (response.ok) {
+                      const updatedProducts = await response.json();
+                      console.log('Refreshed products:', updatedProducts.length);
+                      setAllProducts(updatedProducts);
+                    }
+                  } catch (error) {
+                    console.error('Error refreshing products:', error);
+                  }
+                };
+                loadUpdatedProducts();
+              }}
               className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Show All Products
+              Refresh Products
             </Button>
             <Button
               onClick={handleLogout}
