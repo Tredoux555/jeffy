@@ -72,8 +72,8 @@ function ProductsPageContent() {
       try {
         console.log('🔄 Loading products from API...');
         const response = await fetch('/api/products', {
-          cache: 'force-cache', // Add caching
-          next: { revalidate: 300 } // Revalidate every 5 minutes
+          cache: 'no-store', // Always get fresh data
+          next: { revalidate: 0 } // No revalidation delay
         });
         
         if (response.ok) {
