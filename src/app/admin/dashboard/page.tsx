@@ -335,7 +335,9 @@ export default function AdminDashboard() {
     searchQuery,
     totalProducts: allProducts.length,
     filteredProducts: filteredProducts.length,
-    allProducts: allProducts.map(p => ({ name: p.name, category: p.category }))
+    allProducts: allProducts.map(p => ({ name: p.name, category: p.category })),
+    isAuthenticated,
+    isLoading: allProducts.length === 0
   });
 
   // Debug effect to track category changes
