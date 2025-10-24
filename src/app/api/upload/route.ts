@@ -81,27 +81,7 @@ export async function POST(request: NextRequest) {
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
 
-    // TEMPORARY FIX: Always use placeholder images for now
-    console.log('🔄 Using placeholder image approach (temporary fix)');
-    
-    const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
-    const color = colors[parseInt(imageIndex || '0') % colors.length];
-    const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
-    
-    console.log('✅ Created placeholder image:', placeholderUrl);
-    
-    return NextResponse.json({ 
-      success: true, 
-      filename: placeholderUrl,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-      isMobile: isMobile,
-      storage: 'placeholder-temp-fix',
-      message: 'Using placeholder image (Supabase upload temporarily disabled)'
-    });
-
-    // Try Supabase Storage with admin client (service role key) - DISABLED FOR NOW
+    // Try Supabase Storage with admin client (service role key)
     try {
       console.log('🔍 Checking Supabase admin client...');
       console.log('🔍 Supabase admin client exists:', !!supabaseAdmin);
@@ -115,10 +95,7 @@ export async function POST(request: NextRequest) {
           SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY
         });
         
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Image upload service not configured. Please check Supabase service role key.' 
-        }, { status: 500 });
+        throw new Error('Supabase admin client not configured. Please set up environment variables.');
       }
       
       console.log('🔄 Attempting to upload to Supabase Storage with admin client...');
@@ -243,9 +220,6 @@ export async function POST(request: NextRequest) {
           isMobile: isMobile,
           storage: 'supabase-admin'
         });
-      } else {
-        throw new Error('Supabase admin client not configured');
-      }
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       

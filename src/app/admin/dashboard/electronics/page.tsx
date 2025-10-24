@@ -1,16 +1,18 @@
 "use client";
 
 import { AdminProductCard } from "@/components/admin-product-card";
+import { AddProductForm } from "@/components/add-product-form";
 import { Button } from "@/components/ui/button";
 import { products, categories } from "@/data/products";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, Plus, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function AdminElectronicsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [allProducts, setAllProducts] = useState(products);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +89,23 @@ export default function AdminElectronicsPage() {
     router.push("/admin/login");
   };
 
+  const handleProductAdded = (newProduct: any) => {
+    // Add the new product to the local state
+    setAllProducts(prevProducts => [...prevProducts, newProduct]);
+    
+    // Close the form
+    setShowAddForm(false);
+    
+    // Trigger refresh of main products page
+    const timestamp = Date.now().toString();
+    localStorage.setItem('productUpdated', timestamp);
+    localStorage.setItem('lastProductUpdate', timestamp);
+    localStorage.removeItem('productUpdated');
+    window.dispatchEvent(new CustomEvent('productUpdated', { 
+      detail: { productId: newProduct.id, action: 'created' } 
+    }));
+  };
+
   const electronicsProducts = allProducts.filter(product => product.category === 'electronics');
 
   if (!isAuthenticated) {
@@ -105,13 +124,20 @@ export default function AdminElectronicsPage() {
       <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center justify-center mb-4 gap-4">
               <Link href="/admin/dashboard">
-                <Button variant="outline" className="mr-4 bg-white hover:bg-gray-100">
+                <Button variant="outline" className="bg-white hover:bg-gray-100">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Dashboard
                 </Button>
               </Link>
+              <Button 
+                onClick={() => setShowAddForm(true)} 
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Product
+              </Button>
               <Button onClick={handleLogout} variant="outline" className="bg-white hover:bg-gray-100">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -152,6 +178,15 @@ export default function AdminElectronicsPage() {
           </div>
         )}
       </div>
+
+      {/* Add Product Form Modal */}
+      {showAddForm && (
+        <AddProductForm
+          category="electronics"
+          onProductAdded={handleProductAdded}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
     </div>
   );
 }
