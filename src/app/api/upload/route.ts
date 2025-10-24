@@ -201,9 +201,6 @@ export async function POST(request: NextRequest) {
           isMobile: isMobile,
           storage: 'supabase-admin'
         });
-      } else {
-        throw new Error('Supabase admin client not configured');
-      }
     } catch (supabaseError) {
       console.log('⚠️ Supabase Storage failed:', supabaseError);
       
