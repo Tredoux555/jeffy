@@ -5,10 +5,22 @@ import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Upload API called');
+    console.log('📋 Request headers:', Object.fromEntries(request.headers.entries()));
+    
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
     const productId = data.get('productId') as string;
     const imageIndex = data.get('imageIndex') as string;
+
+    console.log('📦 Form data received:', {
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      productId,
+      imageIndex
+    });
 
     // Better mobile detection
     const userAgent = request.headers.get('user-agent') || '';
@@ -71,8 +83,18 @@ export async function POST(request: NextRequest) {
 
     // Try Supabase Storage with admin client (service role key)
     try {
+      console.log('🔍 Checking Supabase admin client...');
+      console.log('🔍 Supabase admin client exists:', !!supabaseAdmin);
+      
       if (!supabaseAdmin) {
         console.error('❌ Supabase admin client not configured');
+        console.error('❌ Environment variables:', {
+          NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          NEXT_PUBLIC_SUPABASE_SERVICE_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY,
+          SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+        });
+        
         return NextResponse.json({ 
           success: false, 
           error: 'Image upload service not configured. Please check Supabase service role key.' 
