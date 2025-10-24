@@ -13,28 +13,58 @@ export default function ArcheryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const loadProducts = async () => {
+    try {
+      console.log('Archery page: Starting API call...');
+      const response = await fetch('/api/products');
+      console.log('Archery page: API response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Archery page: Received', data.length, 'products');
+      
+      const archeryProducts = data.filter(p => p.category === 'archery' && p.display !== false);
+      console.log('Archery page: Archery products:', archeryProducts.length);
+      
+      setArcheryProducts(archeryProducts);
+      setLoading(false);
+      setError(null);
+    } catch (err) {
+      console.error('Archery page: Error:', err);
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    console.log('Archery page: Starting API call...');
-    fetch('/api/products')
-      .then(res => {
-        console.log('Archery page: API response status:', res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Archery page: Received', data.length, 'products');
-        const archeryProducts = data.filter(p => p.category === 'archery');
-        console.log('Archery page: Archery products:', archeryProducts.length);
-        setArcheryProducts(archeryProducts);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Archery page: Error:', err);
-        setError(err.message);
-        setLoading(false);
-      });
+    loadProducts();
+  }, []);
+
+  // Listen for product updates from admin
+  useEffect(() => {
+    const handleProductUpdate = () => {
+      console.log('Archery page: Product update detected, reloading...');
+      loadProducts();
+    };
+
+    // Listen for localStorage changes (cross-tab updates)
+    const handleStorageChange = (e) => {
+      if (e.key === 'productUpdated' || e.key === 'lastProductUpdate') {
+        handleProductUpdate();
+      }
+    };
+
+    // Listen for custom events (same-tab updates)
+    window.addEventListener('productUpdated', handleProductUpdate);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('productUpdated', handleProductUpdate);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // Filter products based on search query
