@@ -81,7 +81,27 @@ export async function POST(request: NextRequest) {
     
     const filename = `product-${safeProductId}-${safeImageIndex}-${timestamp}.${extension}`;
 
-    // Try Supabase Storage with admin client (service role key)
+    // TEMPORARY FIX: Always use placeholder images for now
+    console.log('🔄 Using placeholder image approach (temporary fix)');
+    
+    const colors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD', '98D8C8', 'F7DC6F'];
+    const color = colors[parseInt(imageIndex || '0') % colors.length];
+    const placeholderUrl = `https://via.placeholder.com/400x400/${color}/FFFFFF?text=${encodeURIComponent(file.name.substring(0, 20))}`;
+    
+    console.log('✅ Created placeholder image:', placeholderUrl);
+    
+    return NextResponse.json({ 
+      success: true, 
+      filename: placeholderUrl,
+      originalName: file.name,
+      size: file.size,
+      type: file.type,
+      isMobile: isMobile,
+      storage: 'placeholder-temp-fix',
+      message: 'Using placeholder image (Supabase upload temporarily disabled)'
+    });
+
+    // Try Supabase Storage with admin client (service role key) - DISABLED FOR NOW
     try {
       console.log('🔍 Checking Supabase admin client...');
       console.log('🔍 Supabase admin client exists:', !!supabaseAdmin);
