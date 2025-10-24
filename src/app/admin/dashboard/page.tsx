@@ -400,14 +400,14 @@ export default function AdminDashboard() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Show All Products
             </Button>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="bg-white hover:bg-gray-100"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="bg-white hover:bg-gray-100"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
           </div>
           
           {/* Categories Section */}
