@@ -42,8 +42,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   }, [showVariants]);
 
   // Get the first available image or use a placeholder
-  const mainImage = product.images && product.images.length > 0 && product.images[0] && product.images[0].trim() !== '' && product.images[0] !== 'null'
-    ? product.images[0] 
+  const mainImage = product.images && product.images.length > 0 
+    ? product.images.find(img => img && img.trim() !== '' && img !== 'null')
     : null;
 
   // Debug logging
