@@ -71,10 +71,7 @@ function ProductsPageContent() {
     const loadProducts = async () => {
       try {
         console.log('🔄 Loading products from API...');
-        const response = await fetch('/api/products', {
-          cache: 'no-store', // Always get fresh data
-          next: { revalidate: 0 } // No revalidation delay
-        });
+        const response = await fetch('/api/products');
         
         if (response.ok) {
           const data = await response.json();
