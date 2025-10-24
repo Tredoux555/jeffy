@@ -114,7 +114,7 @@ export default function ProductPage() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-black mb-4">Product Not Found</h1>
           <p className="text-black mb-8">The product you're looking for doesn't exist.</p>
-          <Link href="/products">
+          <Link href="/">
             <Button className="bg-yellow-400 hover:bg-yellow-500 text-black">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Products
@@ -142,7 +142,7 @@ export default function ProductPage() {
       <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 py-8">
         <div className="container mx-auto px-4">
           <Link 
-            href="/products" 
+            href="/" 
             className="inline-flex items-center text-black/80 hover:text-black mb-4 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProductByIdWithUpdates } from '@/data/products-server';
 import { getProductById } from '@/data/products';
-import fs from 'fs/promises';
-import path from 'path';
+import { loadProducts } from '@/lib/file-storage';
 
 export async function GET(
   request: NextRequest,
@@ -15,21 +13,32 @@ export async function GET(
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
-    // Try to get product with updates first
+    console.log('🔍 Looking for product:', productId);
+
+    // Try to get product from file storage first
     let product;
     try {
-      product = await getProductByIdWithUpdates(productId);
+      const dynamicProducts = await loadProducts();
+      product = dynamicProducts.find(p => p.id === productId);
+      
+      if (product) {
+        console.log('✅ Found product in file storage:', product.name);
+        return NextResponse.json(product);
+      }
     } catch (error) {
-      console.error('Error loading product with updates:', error);
-      // Fallback to original function
-      product = getProductById(productId);
+      console.log('⚠️ File storage failed, trying static products:', error);
     }
 
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    // Fallback to static products
+    product = getProductById(productId);
+    
+    if (product) {
+      console.log('✅ Found product in static data:', product.name);
+      return NextResponse.json(product);
     }
 
-    return NextResponse.json(product);
+    console.log('❌ Product not found:', productId);
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 });
   } catch (error) {
     console.error('Error in products API:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
