@@ -40,30 +40,10 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
-  // Load updated products on component mount
+  // Load products on component mount - SIMPLE VERSION
   useEffect(() => {
-    const loadUpdatedProducts = async () => {
-      try {
-        console.log('Loading products from API...');
-        const response = await fetch('/api/products?includeHidden=true');
-        if (response.ok) {
-          const updatedProducts = await response.json();
-          console.log('Loaded products:', updatedProducts.length);
-          setAllProducts(updatedProducts);
-        } else {
-          console.error('Error loading updated products:', response.statusText);
-          // Fallback to empty array if API fails
-          setAllProducts([]);
-        }
-      } catch (error) {
-        console.error('Error loading updated products:', error);
-        // Fallback to empty array if API fails
-        setAllProducts([]);
-      }
-    };
-    
-    // Load products immediately, don't wait for authentication
-    loadUpdatedProducts();
+    console.log('🔄 Loading static products:', products.length);
+    setAllProducts(products);
   }, []);
 
   const handleToggleDisplay = async (productId: string, display: boolean) => {
@@ -423,8 +403,10 @@ export default function AdminDashboard() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
               {/* All Products Category */}
-              <Link href="/admin/dashboard">
-                <div className="group cursor-pointer">
+              <div 
+                className="group cursor-pointer"
+                onClick={() => setSelectedCategory("all")}
+              >
                 <div className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center ${
                   selectedCategory === "all" ? 'ring-2 ring-yellow-400' : ''
                 }`}>
@@ -438,12 +420,14 @@ export default function AdminDashboard() {
                     <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
-                </div>
-              </Link>
+              </div>
               
               {categories.map((category) => (
-                <Link key={category.id} href={`/admin/dashboard/${category.id}`}>
-                  <div className="group cursor-pointer">
+                <div 
+                  key={category.id}
+                  className="group cursor-pointer"
+                  onClick={() => setSelectedCategory(category.id)}
+                >
                   <div className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center ${
                     selectedCategory === category.id ? 'ring-2 ring-yellow-400' : ''
                   }`}>
@@ -459,8 +443,7 @@ export default function AdminDashboard() {
                       <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
-                  </div>
-                </Link>
+                </div>
               ))}
             </div>
           </div>

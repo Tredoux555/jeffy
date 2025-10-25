@@ -58,30 +58,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   };
 
   useEffect(() => {
-    const loadProduct = async () => {
-      if (params.id) {
-        try {
-          const response = await fetch(`/api/products/${params.id}`);
-          if (response.ok) {
-            const foundProduct = await response.json();
-            setProduct(foundProduct);
-          } else {
-            console.error('Error loading product:', response.statusText);
-            // Fallback to original function
-            const foundProduct = getProductById(params.id);
-            setProduct(foundProduct);
-          }
-        } catch (error) {
-          console.error('Error loading product:', error);
-          // Fallback to original function
-          const foundProduct = getProductById(params.id);
-          setProduct(foundProduct);
-        }
-        setLoading(false);
-      }
-    };
-    
-    loadProduct();
+    if (params.id) {
+      console.log('🔄 Loading product from static data:', params.id);
+      const foundProduct = getProductById(params.id);
+      setProduct(foundProduct);
+      setLoading(false);
+    }
   }, [params.id]);
 
   // Set initial prices when product loads
