@@ -65,17 +65,46 @@ export async function POST(request: NextRequest) {
         throw new Error('Supabase not configured');
       }
     } catch (supabaseError) {
-      console.log('⚠️ Supabase not available, using memory storage:', supabaseError);
+      console.log('⚠️ Supabase not available, using JSON file storage:', supabaseError);
       
-      // Fallback: Store in memory and return success
-      console.log('✅ New product created (memory storage):', productId, productData.name);
-      console.log('📦 Product data:', JSON.stringify(productData, null, 2));
-      
-      return NextResponse.json({ 
-        success: true, 
-        product: productData,
-        message: 'Product created successfully (stored in memory - set up Supabase for permanent storage)'
-      });
+      // Fallback: Store in updated-products.json file
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const updatedProductsPath = path.join(process.cwd(), 'data', 'updated-products.json');
+        
+        // Load existing products
+        let updatedProducts = {};
+        if (fs.existsSync(updatedProductsPath)) {
+          updatedProducts = JSON.parse(fs.readFileSync(updatedProductsPath, 'utf8'));
+        }
+        
+        // Add new product
+        updatedProducts[productId] = productData;
+        
+        // Save back to file
+        fs.writeFileSync(updatedProductsPath, JSON.stringify(updatedProducts, null, 2));
+        
+        console.log('✅ New product created and saved to updated-products.json:', productId, productData.name);
+        console.log('📦 Product data:', JSON.stringify(productData, null, 2));
+        
+        return NextResponse.json({ 
+          success: true, 
+          product: productData,
+          message: 'Product created successfully and saved to file'
+        });
+      } catch (fileError) {
+        console.error('❌ Failed to save product to file:', fileError);
+        
+        // Final fallback: Store in memory
+        console.log('✅ New product created (memory storage):', productId, productData.name);
+        
+        return NextResponse.json({ 
+          success: true, 
+          product: productData,
+          message: 'Product created successfully (stored in memory - file save failed)'
+        });
+      }
     }
   } catch (error) {
     console.error('Error creating product:', error);

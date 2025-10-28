@@ -164,5 +164,23 @@
     ],
     "createdAt": "2025-10-19T14:38:01.360Z",
     "updatedAt": "2025-10-19T14:38:01.361Z"
+  },
+  "1761261890214": {
+    "id": "1761261890214",
+    "name": "Test Product",
+    "category": "gym",
+    "price": 100,
+    "originalPrice": null,
+    "description": "Test product description",
+    "images": [
+      "/products/product-1761261890214-0.jpg"
+    ],
+    "videos": [],
+    "rating": 0,
+    "reviewCount": 0,
+    "inStock": true,
+    "display": true,
+    "createdAt": "2025-01-20T05:30:00.000Z",
+    "updatedAt": "2025-01-20T05:30:00.000Z"
   }
 }
